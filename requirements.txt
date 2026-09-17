@@ -1,29 +1,27 @@
-# Core
-openai>=2.30.0            # OpenAI 兼容客户端，DeepSeek / GLM / OpenAI 共用
-anthropic>=0.40.0         # Anthropic Claude（可选，Huhe 侧）
-requests>=2.32.0
-tenacity>=9.0.0           # 重试与指数退避
-PyYAML>=6.0.3
-pydantic>=2.11.0
-pydantic-settings>=2.12.0
+# 运行环境（Python 3.11+ 建议）
+# 安装：pip install -r requirements.txt
+# 注意：本文件的版本下限按开发机已验证版本回写，不是"必须完全一致"；
+# 若要严格复现，请用 pip freeze 生成 lock 文件。
 
-# 数据与统计
+# --- 采集（data/collection）-------------------------------------------------
+openai>=2.30.0            # OpenAI 兼容客户端：DeepSeek / 智谱 GLM / 火山方舟 / OpenAI
+anthropic>=0.40.0         # Anthropic Claude（Huhe 侧，默认停用）
+requests>=2.32.0          # 抓取官方法规页面
+PyYAML>=6.0.3
+python-dotenv>=1.0.0
+
+# --- 清洗与分析（source/）---------------------------------------------------
 pandas>=2.2.0
 numpy>=2.0.0
-pyarrow>=17.0.0           # parquet 读写
-statsmodels>=0.14.0
-scipy>=1.14.0
+pyarrow>=17.0.0           # parquet 读写（缺失时脚本自动退化到 csv）
+statsmodels>=0.14.0       # AMCE / OLS 聚类标准误
+scipy>=1.14.0             # 二项检验、t 检验、卡方
 scikit-learn>=1.5.0
 
-# 文本抽取与处理
-pymupdf>=1.24.0           # PDF 文本层抽取（快）
-pdfplumber>=0.11.0        # 复杂版面备用
-charset-normalizer>=3.3.0
+# --- PDF 文本抽取（法规文本）------------------------------------------------
+pymupdf>=1.24.0           # PyMuPDF，主用
+pdfplumber>=0.11.0        # 备用（复杂版面）
 
-# 可视化与报告
+# --- 绘图 -------------------------------------------------------------------
 matplotlib>=3.9.0
 seaborn>=0.13.0
-
-# 工具
-tqdm>=4.67.0
-python-dotenv>=1.0.0

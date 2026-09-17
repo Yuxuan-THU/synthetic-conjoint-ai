@@ -21,6 +21,12 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
+# 本项目特有：数据采集阶段里有一个脚本会真实调用付费 API。
+# 自动化复现绝不能误触发它（会产生费用、且会污染“任务—时段”的随机安排），
+# 因此把它排除在 run_all 之外，必须由人工带参数显式执行。
+# 具体命令见 docs/00_work-plan.md §8.
+COLLECTION_MANUAL_ONLY = {"03_run_experiment.py"}
+
 
 def ensure_output_directories() -> None:
     for relative_path in (
@@ -33,18 +39,22 @@ def ensure_output_directories() -> None:
         (PROJECT_ROOT / relative_path).mkdir(parents=True, exist_ok=True)
 
 
-def scripts_in(relative_directory: str) -> list[Path]:
+def scripts_in(relative_directory: str, exclude: set[str] | None = None) -> list[Path]:
     directory = PROJECT_ROOT / relative_directory
+    exclude = exclude or set()
     return sorted(
         path
         for path in directory.glob("*.py")
-        if path.is_file() and not path.name.startswith("_")
+        if path.is_file() and not path.name.startswith("_") and path.name not in exclude
     )
 
 
-def run_stage(label: str, relative_directory: str) -> None:
-    scripts = scripts_in(relative_directory)
+def run_stage(label: str, relative_directory: str, exclude: set[str] | None = None) -> None:
+    scripts = scripts_in(relative_directory, exclude)
     print(f"\n=== {label} ===")
+    if exclude:
+        skipped = sorted(exclude)
+        print(f"跳过（需人工执行）：{', '.join(skipped)}")
     if not scripts:
         print(f"No Python scripts found in {relative_directory}; skipping.")
         return
@@ -71,7 +81,7 @@ def main() -> None:
     ensure_output_directories()
 
     if args.include_collection:
-        run_stage("DATA COLLECTION", "data/collection")
+        run_stage("DATA COLLECTION", "data/collection", exclude=COLLECTION_MANUAL_ONLY)
 
     run_stage("DATA CLEANING", "source/cleaning")
     run_stage("DATA ANALYSIS", "source/analysis")

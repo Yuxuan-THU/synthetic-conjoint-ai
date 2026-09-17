@@ -1,0 +1,770 @@
+{
+  "run_id": "2026-10-05_deepseek_main",
+  "created_at_beijing": "2026-09-17T16:23:45",
+  "config_sha256": "4d6ebccecac27a8a9849c48f42571b66bd41448acc9b8b7ef1d9517ae20e764e",
+  "n_per_condition_scenario": 1000,
+  "jurisdiction_balance": "balanced",
+  "conditions": [
+    "generic",
+    "government"
+  ],
+  "scenarios": [
+    "border_defense",
+    "disease_diagnosis"
+  ],
+  "jurisdictions": [
+    "CN",
+    "US"
+  ],
+  "answer_protocol": "free_text",
+  "n_cells": 6,
+  "n_main_calls": 4000,
+  "n_anchor_calls": 360,
+  "n_calls_expected_total": 4360,
+  "rows_per_scenario_file": {
+    "border_defense": 2180,
+    "disease_diagnosis": 2180
+  },
+  "cell_plans": [
+    {
+      "cell_id": "generic__border_defense",
+      "condition": "generic",
+      "scenario": "border_defense",
+      "jurisdiction": null,
+      "n_tasks": 1000,
+      "session_quotas": {
+        "morning": 334,
+        "afternoon": 333,
+        "evening": 333
+      }
+    },
+    {
+      "cell_id": "generic__disease_diagnosis",
+      "condition": "generic",
+      "scenario": "disease_diagnosis",
+      "jurisdiction": null,
+      "n_tasks": 1000,
+      "session_quotas": {
+        "morning": 334,
+        "afternoon": 333,
+        "evening": 333
+      }
+    },
+    {
+      "cell_id": "government__border_defense__CN",
+      "condition": "government",
+      "scenario": "border_defense",
+      "jurisdiction": "CN",
+      "n_tasks": 500,
+      "session_quotas": {
+        "morning": 167,
+        "afternoon": 166,
+        "evening": 167
+      }
+    },
+    {
+      "cell_id": "government__border_defense__US",
+      "condition": "government",
+      "scenario": "border_defense",
+      "jurisdiction": "US",
+      "n_tasks": 500,
+      "session_quotas": {
+        "morning": 167,
+        "afternoon": 166,
+        "evening": 167
+      }
+    },
+    {
+      "cell_id": "government__disease_diagnosis__CN",
+      "condition": "government",
+      "scenario": "disease_diagnosis",
+      "jurisdiction": "CN",
+      "n_tasks": 500,
+      "session_quotas": {
+        "morning": 167,
+        "afternoon": 166,
+        "evening": 167
+      }
+    },
+    {
+      "cell_id": "government__disease_diagnosis__US",
+      "condition": "government",
+      "scenario": "disease_diagnosis",
+      "jurisdiction": "US",
+      "n_tasks": 500,
+      "session_quotas": {
+        "morning": 167,
+        "afternoon": 166,
+        "evening": 167
+      }
+    }
+  ],
+  "diagnostics": {
+    "generic__border_defense": {
+      "n_main_tasks": 1000,
+      "n_attributes": 5,
+      "space_sizes": {
+        "presented_screen": 933120,
+        "ordered_pair": 7776,
+        "unordered_pair": 243
+      },
+      "n_distinct_observed": {
+        "presented_screen": 998,
+        "ordered_pair": 926,
+        "unordered_pair": 240
+      },
+      "n_distinct_expected": {
+        "presented_screen": 999.46,
+        "ordered_pair": 938.43,
+        "unordered_pair": 239.07
+      },
+      "n_duplicate_observed": {
+        "presented_screen": 2,
+        "ordered_pair": 74,
+        "unordered_pair": 760
+      },
+      "n_duplicate_expected": {
+        "presented_screen": 0.54,
+        "ordered_pair": 61.57,
+        "unordered_pair": 760.93
+      },
+      "n_distinct_attribute_orders": 120,
+      "n_possible_attribute_orders": 120,
+      "share_dominated_task_screens": 0.255,
+      "n_dominated_task_screens": 255,
+      "per_attribute_randomisation": {
+        "rnd_institution": {
+          "n_observed_pairs": 6,
+          "n_possible_pairs": 6,
+          "expected_per_pair": 166.67,
+          "chi_square_df5": 13.724,
+          "chi_square_critical_p01_df5": 15.086,
+          "pairs": {
+            "domestic_private->multinational": 170,
+            "domestic_private->public": 192,
+            "multinational->domestic_private": 189,
+            "multinational->public": 148,
+            "public->domestic_private": 139,
+            "public->multinational": 162
+          }
+        },
+        "miss_military": {
+          "n_observed_pairs": 6,
+          "n_possible_pairs": 6,
+          "expected_per_pair": 166.67,
+          "chi_square_df5": 2.852,
+          "chi_square_critical_p01_df5": 15.086,
+          "pairs": {
+            "high_15->low_1": 165,
+            "high_15->medium_5": 178,
+            "low_1->high_15": 177,
+            "low_1->medium_5": 168,
+            "medium_5->high_15": 154,
+            "medium_5->low_1": 158
+          }
+        },
+        "civilian_casualties": {
+          "n_observed_pairs": 6,
+          "n_possible_pairs": 6,
+          "expected_per_pair": 166.67,
+          "chi_square_df5": 4.4,
+          "chi_square_critical_p01_df5": 15.086,
+          "pairs": {
+            "high_12->low_0_5": 157,
+            "high_12->medium_4": 174,
+            "low_0_5->high_12": 169,
+            "low_0_5->medium_4": 149,
+            "medium_4->high_12": 183,
+            "medium_4->low_0_5": 168
+          }
+        },
+        "timeliness": {
+          "n_observed_pairs": 6,
+          "n_possible_pairs": 6,
+          "expected_per_pair": 166.67,
+          "chi_square_df5": 3.272,
+          "chi_square_critical_p01_df5": 15.086,
+          "pairs": {
+            "five_minutes->one_minute": 174,
+            "five_minutes->realtime": 151,
+            "one_minute->five_minutes": 163,
+            "one_minute->realtime": 169,
+            "realtime->five_minutes": 181,
+            "realtime->one_minute": 162
+          }
+        },
+        "accountability": {
+          "n_observed_pairs": 6,
+          "n_possible_pairs": 6,
+          "expected_per_pair": 166.67,
+          "chi_square_df5": 2.408,
+          "chi_square_critical_p01_df5": 15.086,
+          "pairs": {
+            "commander_responsible->national_immunity": 173,
+            "commander_responsible->rnd_responsible": 153,
+            "national_immunity->commander_responsible": 172,
+            "national_immunity->rnd_responsible": 159,
+            "rnd_responsible->commander_responsible": 176,
+            "rnd_responsible->national_immunity": 167
+          }
+        }
+      }
+    },
+    "generic__disease_diagnosis": {
+      "n_main_tasks": 1000,
+      "n_attributes": 5,
+      "space_sizes": {
+        "presented_screen": 933120,
+        "ordered_pair": 7776,
+        "unordered_pair": 243
+      },
+      "n_distinct_observed": {
+        "presented_screen": 999,
+        "ordered_pair": 941,
+        "unordered_pair": 237
+      },
+      "n_distinct_expected": {
+        "presented_screen": 999.46,
+        "ordered_pair": 938.43,
+        "unordered_pair": 239.07
+      },
+      "n_duplicate_observed": {
+        "presented_screen": 1,
+        "ordered_pair": 59,
+        "unordered_pair": 763
+      },
+      "n_duplicate_expected": {
+        "presented_screen": 0.54,
+        "ordered_pair": 61.57,
+        "unordered_pair": 760.93
+      },
+      "n_distinct_attribute_orders": 120,
+      "n_possible_attribute_orders": 120,
+      "share_dominated_task_screens": 0.241,
+      "n_dominated_task_screens": 241,
+      "per_attribute_randomisation": {
+        "rnd_institution": {
+          "n_observed_pairs": 6,
+          "n_possible_pairs": 6,
+          "expected_per_pair": 166.67,
+          "chi_square_df5": 1.844,
+          "chi_square_critical_p01_df5": 15.086,
+          "pairs": {
+            "domestic_private->multinational": 160,
+            "domestic_private->public": 158,
+            "multinational->domestic_private": 168,
+            "multinational->public": 165,
+            "public->domestic_private": 180,
+            "public->multinational": 169
+          }
+        },
+        "missed_diagnosis": {
+          "n_observed_pairs": 6,
+          "n_possible_pairs": 6,
+          "expected_per_pair": 166.67,
+          "chi_square_df5": 3.716,
+          "chi_square_critical_p01_df5": 15.086,
+          "pairs": {
+            "high_18->low_1": 155,
+            "high_18->medium_8": 177,
+            "low_1->high_18": 171,
+            "low_1->medium_8": 157,
+            "medium_8->high_18": 181,
+            "medium_8->low_1": 159
+          }
+        },
+        "misdiagnosis": {
+          "n_observed_pairs": 6,
+          "n_possible_pairs": 6,
+          "expected_per_pair": 166.67,
+          "chi_square_df5": 16.364,
+          "chi_square_critical_p01_df5": 15.086,
+          "pairs": {
+            "high_22->low_0_5": 172,
+            "high_22->medium_10": 145,
+            "low_0_5->high_22": 164,
+            "low_0_5->medium_10": 208,
+            "medium_10->high_22": 144,
+            "medium_10->low_0_5": 167
+          }
+        },
+        "efficiency": {
+          "n_observed_pairs": 6,
+          "n_possible_pairs": 6,
+          "expected_per_pair": 166.67,
+          "chi_square_df5": 4.796,
+          "chi_square_critical_p01_df5": 15.086,
+          "pairs": {
+            "instant->one_week": 176,
+            "instant->same_day": 150,
+            "one_week->instant": 172,
+            "one_week->same_day": 177,
+            "same_day->instant": 151,
+            "same_day->one_week": 174
+          }
+        },
+        "legal_accountability": {
+          "n_observed_pairs": 6,
+          "n_possible_pairs": 6,
+          "expected_per_pair": 166.67,
+          "chi_square_df5": 3.32,
+          "chi_square_critical_p01_df5": 15.086,
+          "pairs": {
+            "liability_waiver->physician_responsible": 153,
+            "liability_waiver->rnd_responsible": 181,
+            "physician_responsible->liability_waiver": 166,
+            "physician_responsible->rnd_responsible": 161,
+            "rnd_responsible->liability_waiver": 177,
+            "rnd_responsible->physician_responsible": 162
+          }
+        }
+      }
+    },
+    "government__border_defense__CN": {
+      "n_main_tasks": 500,
+      "n_attributes": 5,
+      "space_sizes": {
+        "presented_screen": 933120,
+        "ordered_pair": 7776,
+        "unordered_pair": 243
+      },
+      "n_distinct_observed": {
+        "presented_screen": 500,
+        "ordered_pair": 483,
+        "unordered_pair": 213
+      },
+      "n_distinct_expected": {
+        "presented_screen": 499.87,
+        "ordered_pair": 484.29,
+        "unordered_pair": 212.09
+      },
+      "n_duplicate_observed": {
+        "presented_screen": 0,
+        "ordered_pair": 17,
+        "unordered_pair": 287
+      },
+      "n_duplicate_expected": {
+        "presented_screen": 0.13,
+        "ordered_pair": 15.71,
+        "unordered_pair": 287.91
+      },
+      "n_distinct_attribute_orders": 115,
+      "n_possible_attribute_orders": 120,
+      "share_dominated_task_screens": 0.222,
+      "n_dominated_task_screens": 111,
+      "per_attribute_randomisation": {
+        "rnd_institution": {
+          "n_observed_pairs": 6,
+          "n_possible_pairs": 6,
+          "expected_per_pair": 83.33,
+          "chi_square_df5": 4.168,
+          "chi_square_critical_p01_df5": 15.086,
+          "pairs": {
+            "domestic_private->multinational": 99,
+            "domestic_private->public": 82,
+            "multinational->domestic_private": 82,
+            "multinational->public": 78,
+            "public->domestic_private": 75,
+            "public->multinational": 84
+          }
+        },
+        "miss_military": {
+          "n_observed_pairs": 6,
+          "n_possible_pairs": 6,
+          "expected_per_pair": 83.33,
+          "chi_square_df5": 3.064,
+          "chi_square_critical_p01_df5": 15.086,
+          "pairs": {
+            "high_15->low_1": 86,
+            "high_15->medium_5": 78,
+            "low_1->high_15": 89,
+            "low_1->medium_5": 72,
+            "medium_5->high_15": 84,
+            "medium_5->low_1": 91
+          }
+        },
+        "civilian_casualties": {
+          "n_observed_pairs": 6,
+          "n_possible_pairs": 6,
+          "expected_per_pair": 83.33,
+          "chi_square_df5": 1.6,
+          "chi_square_critical_p01_df5": 15.086,
+          "pairs": {
+            "high_12->low_0_5": 80,
+            "high_12->medium_4": 85,
+            "low_0_5->high_12": 87,
+            "low_0_5->medium_4": 79,
+            "medium_4->high_12": 78,
+            "medium_4->low_0_5": 91
+          }
+        },
+        "timeliness": {
+          "n_observed_pairs": 6,
+          "n_possible_pairs": 6,
+          "expected_per_pair": 83.33,
+          "chi_square_df5": 1.24,
+          "chi_square_critical_p01_df5": 15.086,
+          "pairs": {
+            "five_minutes->one_minute": 82,
+            "five_minutes->realtime": 91,
+            "one_minute->five_minutes": 85,
+            "one_minute->realtime": 80,
+            "realtime->five_minutes": 84,
+            "realtime->one_minute": 78
+          }
+        },
+        "accountability": {
+          "n_observed_pairs": 6,
+          "n_possible_pairs": 6,
+          "expected_per_pair": 83.33,
+          "chi_square_df5": 4.384,
+          "chi_square_critical_p01_df5": 15.086,
+          "pairs": {
+            "commander_responsible->national_immunity": 87,
+            "commander_responsible->rnd_responsible": 94,
+            "national_immunity->commander_responsible": 68,
+            "national_immunity->rnd_responsible": 85,
+            "rnd_responsible->commander_responsible": 83,
+            "rnd_responsible->national_immunity": 83
+          }
+        }
+      }
+    },
+    "government__border_defense__US": {
+      "n_main_tasks": 500,
+      "n_attributes": 5,
+      "space_sizes": {
+        "presented_screen": 933120,
+        "ordered_pair": 7776,
+        "unordered_pair": 243
+      },
+      "n_distinct_observed": {
+        "presented_screen": 500,
+        "ordered_pair": 488,
+        "unordered_pair": 218
+      },
+      "n_distinct_expected": {
+        "presented_screen": 499.87,
+        "ordered_pair": 484.29,
+        "unordered_pair": 212.09
+      },
+      "n_duplicate_observed": {
+        "presented_screen": 0,
+        "ordered_pair": 12,
+        "unordered_pair": 282
+      },
+      "n_duplicate_expected": {
+        "presented_screen": 0.13,
+        "ordered_pair": 15.71,
+        "unordered_pair": 287.91
+      },
+      "n_distinct_attribute_orders": 118,
+      "n_possible_attribute_orders": 120,
+      "share_dominated_task_screens": 0.292,
+      "n_dominated_task_screens": 146,
+      "per_attribute_randomisation": {
+        "rnd_institution": {
+          "n_observed_pairs": 6,
+          "n_possible_pairs": 6,
+          "expected_per_pair": 83.33,
+          "chi_square_df5": 0.64,
+          "chi_square_critical_p01_df5": 15.086,
+          "pairs": {
+            "domestic_private->multinational": 85,
+            "domestic_private->public": 86,
+            "multinational->domestic_private": 85,
+            "multinational->public": 84,
+            "public->domestic_private": 77,
+            "public->multinational": 83
+          }
+        },
+        "miss_military": {
+          "n_observed_pairs": 6,
+          "n_possible_pairs": 6,
+          "expected_per_pair": 83.33,
+          "chi_square_df5": 4.744,
+          "chi_square_critical_p01_df5": 15.086,
+          "pairs": {
+            "high_15->low_1": 89,
+            "high_15->medium_5": 80,
+            "low_1->high_15": 94,
+            "low_1->medium_5": 78,
+            "medium_5->high_15": 89,
+            "medium_5->low_1": 70
+          }
+        },
+        "civilian_casualties": {
+          "n_observed_pairs": 6,
+          "n_possible_pairs": 6,
+          "expected_per_pair": 83.33,
+          "chi_square_df5": 3.856,
+          "chi_square_critical_p01_df5": 15.086,
+          "pairs": {
+            "high_12->low_0_5": 79,
+            "high_12->medium_4": 95,
+            "low_0_5->high_12": 82,
+            "low_0_5->medium_4": 91,
+            "medium_4->high_12": 74,
+            "medium_4->low_0_5": 79
+          }
+        },
+        "timeliness": {
+          "n_observed_pairs": 6,
+          "n_possible_pairs": 6,
+          "expected_per_pair": 83.33,
+          "chi_square_df5": 4.336,
+          "chi_square_critical_p01_df5": 15.086,
+          "pairs": {
+            "five_minutes->one_minute": 81,
+            "five_minutes->realtime": 71,
+            "one_minute->five_minutes": 85,
+            "one_minute->realtime": 94,
+            "realtime->five_minutes": 78,
+            "realtime->one_minute": 91
+          }
+        },
+        "accountability": {
+          "n_observed_pairs": 6,
+          "n_possible_pairs": 6,
+          "expected_per_pair": 83.33,
+          "chi_square_df5": 2.248,
+          "chi_square_critical_p01_df5": 15.086,
+          "pairs": {
+            "commander_responsible->national_immunity": 90,
+            "commander_responsible->rnd_responsible": 84,
+            "national_immunity->commander_responsible": 90,
+            "national_immunity->rnd_responsible": 81,
+            "rnd_responsible->commander_responsible": 74,
+            "rnd_responsible->national_immunity": 81
+          }
+        }
+      }
+    },
+    "government__disease_diagnosis__CN": {
+      "n_main_tasks": 500,
+      "n_attributes": 5,
+      "space_sizes": {
+        "presented_screen": 933120,
+        "ordered_pair": 7776,
+        "unordered_pair": 243
+      },
+      "n_distinct_observed": {
+        "presented_screen": 500,
+        "ordered_pair": 480,
+        "unordered_pair": 213
+      },
+      "n_distinct_expected": {
+        "presented_screen": 499.87,
+        "ordered_pair": 484.29,
+        "unordered_pair": 212.09
+      },
+      "n_duplicate_observed": {
+        "presented_screen": 0,
+        "ordered_pair": 20,
+        "unordered_pair": 287
+      },
+      "n_duplicate_expected": {
+        "presented_screen": 0.13,
+        "ordered_pair": 15.71,
+        "unordered_pair": 287.91
+      },
+      "n_distinct_attribute_orders": 119,
+      "n_possible_attribute_orders": 120,
+      "share_dominated_task_screens": 0.254,
+      "n_dominated_task_screens": 127,
+      "per_attribute_randomisation": {
+        "rnd_institution": {
+          "n_observed_pairs": 6,
+          "n_possible_pairs": 6,
+          "expected_per_pair": 83.33,
+          "chi_square_df5": 8.032,
+          "chi_square_critical_p01_df5": 15.086,
+          "pairs": {
+            "domestic_private->multinational": 87,
+            "domestic_private->public": 77,
+            "multinational->domestic_private": 83,
+            "multinational->public": 102,
+            "public->domestic_private": 84,
+            "public->multinational": 67
+          }
+        },
+        "missed_diagnosis": {
+          "n_observed_pairs": 6,
+          "n_possible_pairs": 6,
+          "expected_per_pair": 83.33,
+          "chi_square_df5": 5.92,
+          "chi_square_critical_p01_df5": 15.086,
+          "pairs": {
+            "high_18->low_1": 79,
+            "high_18->medium_8": 70,
+            "low_1->high_18": 75,
+            "low_1->medium_8": 91,
+            "medium_8->high_18": 93,
+            "medium_8->low_1": 92
+          }
+        },
+        "misdiagnosis": {
+          "n_observed_pairs": 6,
+          "n_possible_pairs": 6,
+          "expected_per_pair": 83.33,
+          "chi_square_df5": 6.136,
+          "chi_square_critical_p01_df5": 15.086,
+          "pairs": {
+            "high_22->low_0_5": 79,
+            "high_22->medium_10": 82,
+            "low_0_5->high_22": 80,
+            "low_0_5->medium_10": 72,
+            "medium_10->high_22": 102,
+            "medium_10->low_0_5": 85
+          }
+        },
+        "efficiency": {
+          "n_observed_pairs": 6,
+          "n_possible_pairs": 6,
+          "expected_per_pair": 83.33,
+          "chi_square_df5": 2.392,
+          "chi_square_critical_p01_df5": 15.086,
+          "pairs": {
+            "instant->one_week": 88,
+            "instant->same_day": 88,
+            "one_week->instant": 72,
+            "one_week->same_day": 83,
+            "same_day->instant": 81,
+            "same_day->one_week": 88
+          }
+        },
+        "legal_accountability": {
+          "n_observed_pairs": 6,
+          "n_possible_pairs": 6,
+          "expected_per_pair": 83.33,
+          "chi_square_df5": 0.496,
+          "chi_square_critical_p01_df5": 15.086,
+          "pairs": {
+            "liability_waiver->physician_responsible": 78,
+            "liability_waiver->rnd_responsible": 83,
+            "physician_responsible->liability_waiver": 85,
+            "physician_responsible->rnd_responsible": 85,
+            "rnd_responsible->liability_waiver": 86,
+            "rnd_responsible->physician_responsible": 83
+          }
+        }
+      }
+    },
+    "government__disease_diagnosis__US": {
+      "n_main_tasks": 500,
+      "n_attributes": 5,
+      "space_sizes": {
+        "presented_screen": 933120,
+        "ordered_pair": 7776,
+        "unordered_pair": 243
+      },
+      "n_distinct_observed": {
+        "presented_screen": 500,
+        "ordered_pair": 485,
+        "unordered_pair": 218
+      },
+      "n_distinct_expected": {
+        "presented_screen": 499.87,
+        "ordered_pair": 484.29,
+        "unordered_pair": 212.09
+      },
+      "n_duplicate_observed": {
+        "presented_screen": 0,
+        "ordered_pair": 15,
+        "unordered_pair": 282
+      },
+      "n_duplicate_expected": {
+        "presented_screen": 0.13,
+        "ordered_pair": 15.71,
+        "unordered_pair": 287.91
+      },
+      "n_distinct_attribute_orders": 118,
+      "n_possible_attribute_orders": 120,
+      "share_dominated_task_screens": 0.236,
+      "n_dominated_task_screens": 118,
+      "per_attribute_randomisation": {
+        "rnd_institution": {
+          "n_observed_pairs": 6,
+          "n_possible_pairs": 6,
+          "expected_per_pair": 83.33,
+          "chi_square_df5": 9.424,
+          "chi_square_critical_p01_df5": 15.086,
+          "pairs": {
+            "domestic_private->multinational": 85,
+            "domestic_private->public": 100,
+            "multinational->domestic_private": 75,
+            "multinational->public": 64,
+            "public->domestic_private": 91,
+            "public->multinational": 85
+          }
+        },
+        "missed_diagnosis": {
+          "n_observed_pairs": 6,
+          "n_possible_pairs": 6,
+          "expected_per_pair": 83.33,
+          "chi_square_df5": 7.36,
+          "chi_square_critical_p01_df5": 15.086,
+          "pairs": {
+            "high_18->low_1": 75,
+            "high_18->medium_8": 77,
+            "low_1->high_18": 73,
+            "low_1->medium_8": 100,
+            "medium_8->high_18": 81,
+            "medium_8->low_1": 94
+          }
+        },
+        "misdiagnosis": {
+          "n_observed_pairs": 6,
+          "n_possible_pairs": 6,
+          "expected_per_pair": 83.33,
+          "chi_square_df5": 4.864,
+          "chi_square_critical_p01_df5": 15.086,
+          "pairs": {
+            "high_22->low_0_5": 95,
+            "high_22->medium_10": 75,
+            "low_0_5->high_22": 90,
+            "low_0_5->medium_10": 84,
+            "medium_10->high_22": 71,
+            "medium_10->low_0_5": 85
+          }
+        },
+        "efficiency": {
+          "n_observed_pairs": 6,
+          "n_possible_pairs": 6,
+          "expected_per_pair": 83.33,
+          "chi_square_df5": 9.616,
+          "chi_square_critical_p01_df5": 15.086,
+          "pairs": {
+            "instant->one_week": 92,
+            "instant->same_day": 69,
+            "one_week->instant": 100,
+            "one_week->same_day": 89,
+            "same_day->instant": 69,
+            "same_day->one_week": 81
+          }
+        },
+        "legal_accountability": {
+          "n_observed_pairs": 6,
+          "n_possible_pairs": 6,
+          "expected_per_pair": 83.33,
+          "chi_square_df5": 1.816,
+          "chi_square_critical_p01_df5": 15.086,
+          "pairs": {
+            "liability_waiver->physician_responsible": 85,
+            "liability_waiver->rnd_responsible": 78,
+            "physician_responsible->liability_waiver": 76,
+            "physician_responsible->rnd_responsible": 84,
+            "rnd_responsible->liability_waiver": 91,
+            "rnd_responsible->physician_responsible": 86
+          }
+        }
+      }
+    }
+  },
+  "invariants_checked": [
+    "同一属性上甲、乙取值不同",
+    "属性行序为完整随机排列",
+    "属性取值均来自配置水平集合"
+  ],
+  "notes": "任务种子 = sha256(run_id | cell_id | task_kind | task_index) 取前 8 字节，因此同一 run_id 的设计矩阵可完全重放；锚点任务的各种重复共用同一任务（种子不含 repeat_index）。"
+}

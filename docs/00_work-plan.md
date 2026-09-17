@@ -359,6 +359,22 @@ synthetic-conjoint-ai/
 
 ## 13. 待确认问题（Q1–Q21）
 
+> **2026-09-18 更新：苏宇轩已回复 Q2/Q3/Q4/Q5/Q13/Q14，其余按默认执行。**
+> 结论已写进 config，不再需要讨论：
+>
+> | # | 决定 | 落地位置 |
+> |---|---|---|
+> | Q2 | 法规文本取自 `ai legal text/china`，但其中 PDF 为扫描件、OCR 不可用，因此改为**从官方页面抓取干净原文** | `config/legal_texts.yaml` 的 `retrieval.mode: fetch` |
+> | Q3 | 先只做 **CN + US** 两个法域 | `experiment.yaml` 的 `jurisdictions: [CN, US]` |
+> | Q4 | **只做英文**，不做中文版 | `experiment.yaml` 的 `languages: [en]` |
+> | Q5 | **统一采用英文版口径**（人大 / 国家安全委员会 / 地方卫生委员会公众代表） | `config/scenarios.yaml` 的 `vignette_en` |
+> | Q13 | **不使用任何思维链模型**（deepseek-reasoner 保持停用） | `config/models.yaml` |
+> | Q14 | base_url 可切换（从环境变量读，可指向官方或校内转发） | `config/models.yaml` 的 `base_url_env` |
+>
+> 下面保留原始问题与默认值，作为决策依据存档。
+
+### 原问题清单
+
 > 每条都给了**默认建议**。你可以回复「全部按默认」，或只回复要改的编号。
 > 标 🔴 的会把整体节奏卡住（要在 9/24 前有答案）；其余可先按默认跑通流程，pilot 之后再改——因为都写在 config 里，不用重写代码。
 
@@ -440,4 +456,93 @@ synthetic-conjoint-ai/
 - [x] 扫描 12 份法规文件的可机读文本量，定位 OCR 缺口
 - [x] 按 research-project-template 建立项目骨架
 - [x] 归档原始材料到 `data/raw/instrument/`、纪要到 `docs/`
-- [ ] 等 Q1–Q21 确认 → 写代码
+- [x] Q1–Q21 定下口径 → 写入 config
+- [x] 采集、清洗、分析代码全部写完并通过自检（见 §15）
+- [ ] 提示词定稿（`draft` → `frozen`）与法规文本人工确认（`huhe_confirmed`）
+- [ ] 把 running script 发 Huhe 确认（纪要明确要求，9/30 前）
+- [ ] 真实调用 DeepSeek 跑主实验
+
+---
+
+## 15. 代码交付清单与运行手册
+
+### 15.1 已写好的脚本
+
+| 阶段 | 脚本 | 作用 |
+|---|---|---|
+| 采集 | `data/collection/01_build_design_matrix.py` | 生成并**冻结**随机任务矩阵（主 4000 + 锦点 360），含随机化诊断与不变量校验 |
+| 采集 | `data/collection/02_build_legal_texts.py` | 抓取/抽取 treatment 法规文本，生成 manifest（来源 URL + sha256 + 审核状态）与质检报告 |
+| 采集 | `data/collection/03_run_experiment.py` | 主运行器：渲染 → 调用 DeepSeek → 落盘 JSONL；支持断点续跑、时段配额、守卫检查、`--dry-run`、`--mock` |
+| 采集库 | `data/collection/_llm/{config,io_utils,design,render,providers}.py` | 随机化引擎、渲染器、厂商适配器、IO 工具 |
+| 自检 | `data/collection/_llm/tests/run_tests.py` | 19 个单元测试，锁定设计不变量与渲染规则 |
+| 清洗 | `source/cleaning/01_parse_responses.py` | 解析自由文本 → choice panel；输出人工核对样本 |
+| 清洗 | `source/cleaning/02_build_analysis_data.py` | 构造长表与重复任务分组 |
+| 清洗库 | `source/cleaning/_parse_lib.py` | 答案解析器（带 10 条自测用例，可直接跑） |
+| 分析 | `source/analysis/01_descriptives.py` | 描述统计、解析质量、成本核算 |
+| 分析 | `source/analysis/02_conjoint_amce.py` | AMCE + treatment 交互 + 法域交互（论文核心） |
+| 分析 | `source/analysis/03_variance_checks.py` | 锦点一致性、时段效应、属性行序效应 |
+| 分析 | `source/analysis/04_text_analysis.py` | 解释文本的描述统计、框架词频、可选 LLM 编码 |
+
+### 15.2 运行手册（按顺序）
+
+```bash
+# 0) 环境
+pip install -r requirements.txt
+cp .env.example .env        # 填入 DEEPSEEK_API_KEY
+
+# 1) 自检（不联网、不花钱）
+python data/collection/_llm/tests/run_tests.py
+python source/cleaning/_parse_lib.py
+
+# 2) 生成冻结的任务矩阵
+python data/collection/01_build_design_matrix.py --run-id 2026-10-05_deepseek_main
+
+# 3) 准备法规文本，核对后人工确认
+python data/collection/02_build_legal_texts.py
+python data/collection/02_build_legal_texts.py \
+    --set-review-status CN_generative_ai_interim_measures_2023=huhe_confirmed \
+    --set-review-status US_nist_ai_rmf_1_0_2023=huhe_confirmed
+
+# 4) 先看会发出去什么（不调用 API，不需要密钥）
+python data/collection/03_run_experiment.py --run-id 2026-10-05_deepseek_main --dry-run
+
+# 5) 跑通链路但不花钱（伪回答，run-id 以 MOCK_ 开头会被清洗脚本自动忽略）
+python data/collection/03_run_experiment.py --run-id MOCK_demo --mock --skip-guards \
+    --session morning --limit-per-cell 30
+
+# 6) 真实调用：三个时段各触发一次
+python data/collection/03_run_experiment.py --run-id 2026-10-05_deepseek_main --session morning
+python data/collection/03_run_experiment.py --run-id 2026-10-05_deepseek_main --session afternoon
+python data/collection/03_run_experiment.py --run-id 2026-10-05_deepseek_main --session evening
+
+# 7) 清洗 + 分析
+python replication/run_all.py
+```
+
+### 15.3 已实际验证过的部分
+
+- `01_build_design_matrix.py`：4000 主任务 + 360 锦点，6 个单元，全部不变量校验通过；
+  每属性有序对 chi2(df=5) 全部落在 p>0.01 临界值内；被支配方案占比 22%–29%（已记录，供 Q11 讨论）。
+- `02_build_legal_texts.py`：中国法规从网信办官页抓到干净原文（3668 字符，第二十四条完整）；
+  美国 NIST AI RMF 从 PDF 抽取（105 623 字符，≈2.64 万 token）。
+- `03_run_experiment.py`：`--dry-run` 样张已人工核对；generic / government / CN / US 渲染均正确；
+  prefix 在单元内保持不变，`prompt_archive_id` 在条件/情景间不撞号。
+- 全链路 `--mock` 跑通：216 次伪调用 × 6 个单元 × 3 个时段 → 清洗 → 四个分析脚本全部退出码 0。
+- 自检中发现并修掉的真实 bug（已写入代码注释与测试）：
+  1. `prompt_archive_id` 只哈希 prefix，没盖 system prompt，导致 generic 与 government 撞号；
+  2. 两版 prompt 的条件段字数原来差 1.6 倍，已对齐到 1.16 倍；
+  3. HTML 转文本时把 `<meta>/<link>` 当成容器标签，导致正文全被跳过；
+  4. 解析器把 “option because” 里的 b 误当成 Option B；
+  5. 锦点一致性原按含重复序号的 `task_id` 分组，12 次重复被拆成 12 个独立任务；
+  6. `chose_a` 缺失导致稳健性脚本报错；
+  7. matplotlib 默认字体不含汉字，图里全是方块。
+
+### 15.4 还需要 Huhe 拍板的三件事（不能由代码决定）
+
+1. **提示词定稿**：把 `docs/02_prompt-freeze.md` 里的两版 prompt（含与 Huhe 原稿的 5 处差异说明）发给 Huhe，
+   确认后把 `prompts.yaml` 的 `status` 改为 `frozen`——不改的话采集脚本会拒绝开跑。
+2. **法规文本确认**：特别是美国那份的篇幅问题——NIST AI RMF 约 2.6 万 token，
+   是中国暂行办法（约 2 300 token）的 10 倍。法域之间的“treatment 篇幅”本身就是一个混淆因素，
+   要么在论文里明确说明，要么用 `processing.max_chars` 节选并写明节选规则。
+3. **被支配方案占比 22%–29%**：严格按“纯随机”会自然产生“甲在三个可排序维度上全面更优”的任务。
+   默认保留（忠于纯随机），但请 Huhe 确认是否接受。

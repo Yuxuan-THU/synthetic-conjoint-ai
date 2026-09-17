@@ -24,26 +24,38 @@
 **算法**（`_llm/design.py::sample_task`）：
 
 ```
-seed  = stable_seed(run_id, task_id)        # 由 hash 派生，保证可重放
+seed  = stable_seed(run_id, cell_id, task_kind, task_index)   # 由 hash 派生，保证可重放
 rng   = random.Random(seed)
 
 for each attribute k in scenario.attributes:
-    (a_k, b_k) = rng.sample(levels[k], 2)   # 有序不放回 → 甲≠乙，且 (甲,乙) 等概率
-    # 等价于 6 种有序对等概率；因为 attribute 之间独立，任务空间 = 6^5 = 7776
+    (a_k, b_k) = rng.sample(levels[k], 2)   # 有序不放回 → 甲≠乙，且 6 种有序对等概率
 
-attr_order   = rng.sample(range(5), 5)      # 属性行序随机（批注要求）
-option_order = rng.choice(["AB", "BA"])     # 甲/乙左右位置随机（Q12，默认开）
+attr_order = rng.sample(scenario.attribute_ids, 5)   # 属性行序随机（批注要求）
 ```
 
-**必须满足的不变量**（写进单元测试 `_llm/test_design.py`）：
+> 关于“甲乙左右位随机化”：`rng.sample(levels, 2)` 返回的是**有序**对，
+> 已经从 6 种排列中等概率抽取，因此“哪个方案落在 Option A 列”**已经被随机化了**。
+> 再叠加一层位置交换只会引入冗余变量，所以代码**不做**这件事（即 Q12 的默认建议）。
+> 锦点任务的各种重复共用同一任务：种子里**不含** `repeat_index`，只有 `task_id` 含它
+> （为了断点续跑去重）。
+
+**三个指纹**（分别对应三种“重复”口径，分析时不要混用）：
+
+| 字段 | 含义 | 可能取值数 |
+|---|---|---|
+| `task_signature` | 呈现屏（含左右位与行序） | 6⁵ × 5! = 933 120 |
+| `task_signature_pair` | 同一对方案（含左右位，不含行序） | 6⁵ = 7 776 |
+| `task_signature_unordered` | 同一对档案（无左右位/行序） | 3⁵ = 243 |
+
+**必须满足的不变量**（已写进单元测试 `_llm/tests/run_tests.py`，19 个测试全部通过）：
 
 1. 对每个属性，`a_k != b_k`（批注：两种方案的随机值必须不同）；
-2. 5 个属性全部出现且各出现一次，行序是 `range(5)` 的一个排列；
-3. 对固定 `(run_id, task_id)`，重复调用 `sample_task` 得到完全相同的任务（可重放）；
-4. 1000 次采样下，每个属性的 6 种有序对频次近似均匀（卡方检验 p > 0.01）；
-5. 输出 `dominance` 字段：甲在所有属性上优于乙（或反之）时为 `True`，用于 §12 风险清单里的被支配方案占比检查。
-
-> `option_order = "BA"` 时应把 `a_k/b_k` 在**渲染层**交换，而**不改动**落盘的 `option_a_*` / `option_b_*`（编码列始终表示"甲/乙"的语义位，呈现位单独由 `option_order` 记录），否则分析阶段会发生左右位置与语义位混淆。
+2. 5 个属性全部出现且各出现一次，行序是完整随机排列；
+3. 对固定 `(run_id, cell_id, task_kind, task_index)` 可完全重放；
+4. 每个属性的 6 种有序对频次近似均匀（卡方 df=5，p > 0.01）；
+5. 锦点重复共用同一任务，但 `task_id` 各不相同；
+6. 各时段的任务索引区间互不重叠且覆盖全部任务；
+7. 同一单元内渲染前缀保持稳定（prefix cache 与归档正确性的前提）。
 
 ---
 
@@ -126,11 +138,28 @@ Which option do you choose? Respond with your choice and a short explanation
 政府条件下法规全文可能长达 2.7 万 token（NIST AI RMF），若每个响应行都内嵌完整 prompt，4000 行会产生数百 MB 冗余。因此采用**前缀归档**：
 
 - `data/raw/responses/_prompt_archive.jsonl`：只对**唯一前缀**写一行，键为
-  `prompt_archive_id = sha256(condition | scenario | language | jurisdiction | prompt_id | law_text_id | render_style)[:16]`，
-  内容为该前缀的完整文本（system prompt + vignette + 法规全文 + 固定的提问句）；
-  组合数上限为 2 条件 × 2 情景 × 2 语言 × 2 法域 = 16 行；
+  `prompt_archive_id = sha256(system_prompt + "\n\n" + prefix_text)[:16]`，
+  内容为该前缀的完整文本（system prompt + vignette + 法规全文 + 固定的提问句）。
+
+  ⚠️ 必须把 **system prompt 一起纳入哈希**：条件差异就写在 system prompt 里，
+  只哈希 user 前缀会让 generic 与 government 撞到同一个 id（这个 bug 真实发生过，
+  现有单元测试盯着它）。组合数上限：2 条件 × 2 情景 × 1 语言 × 2 法域 = 8 行；
 - 每个响应行只写 `prompt_archive_id`、`prompt_prefix_sha256`、`task_screen_text`（任务屏本身短且逐任务不同）以及 `user_prompt_sha256`；
 - 复现时 `prefix(archive)` + `task_screen_text` 拼回完整 prompt，并用 `user_prompt_sha256` 校验。
+
+### 6.2 调用顺序与断点续跑
+
+- 每个单元内**锦点任务排在主任务之前**：锦点数量少但对稳健性检验最关键，
+  排在前面就不会被 `--limit` / `--limit-per-cell` 截掉。
+- 去重键 = `(run_id, task_id)`；`task_id` 带 `repeat_index`，所以锦点的 12 次重复
+  不会被误判为“已跑过”。
+
+### 6.3 mock 模式
+
+`03_run_experiment.py --mock` 不调 API，用确定性伪回答生成合规格式的 JSONL，
+用于验证整条链路与给合作者演示。约定：mock 数据的 `run_id` 以 `MOCK` 开头，
+清洗脚本默认**不读** `MOCK` 数据（只有显式 `--run-id MOCK_...` 时才会读），
+因此伪数据不可能污染真实分析。
 
 这样既保证逐次可复现，又不产生数量级冗余。
 
@@ -141,7 +170,8 @@ Which option do you choose? Respond with your choice and a short explanation
 | 文件 | 粒度 | 说明 |
 |---|---|---|
 | `choice_panel.parquet` | 一次调用一行 | 原始 JSONL 扁平化 + 设计矩阵 join |
-| `choice_panel_long.parquet` | 一调用 × 一属性一行 | 供 AMCE 回归用（`attribute / level / is_option_a`） |
+| `choice_long.parquet` | 一次调用 × 一属性一行 | 供 AMCE 回归用（`attribute / level_a / level_b / chose_a`） |
+| `choice_option_long.parquet` | 一调用 × 一方案 × 一属性一行 | AMCE 的标准输入（`attribute / level / chosen`） |
 | `anchor_consistency.parquet` | 一锚点任务 × 条件一行 | 重复抽样的选择分布 |
 | `session_effects.csv` | 时段 × 条件 | 时段效应估计 |
 

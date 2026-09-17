@@ -1,0 +1,31 @@
+scenario,attribute_id,attribute_label_en,higher_is_better,level_id,level_label_en,dominance_rank,level_index
+border_defense,rnd_institution,R&D Institution,,public,"Public R&D Institutions: e.g., public universities, government research institutes, etc.",,0
+border_defense,rnd_institution,R&D Institution,,domestic_private,"Domestic Private Institutions: e.g., private tech companies.",,1
+border_defense,rnd_institution,R&D Institution,,multinational,Multinational Tech Corporations.,,2
+border_defense,miss_military,Probability of Missing Military Targets,0,high_15,"15% Risk (High): Frequently fails to identify camouflaged targets, resulting in a high rate of missed detections.",3,0
+border_defense,miss_military,Probability of Missing Military Targets,0,medium_5,5% Risk (Medium): Occasionally misses targets under complex weather conditions; recognition stability is average.,2,1
+border_defense,miss_military,Probability of Missing Military Targets,0,low_1,1% Risk (Low): Rarely misses targets; capable of precise identification in almost any environment.,1,2
+border_defense,civilian_casualties,Probability of Civilian Casualties,0,high_12,"12% Risk (High): Frequently misidentifies civilian targets as military targets, threatening civilian safety.",3,0
+border_defense,civilian_casualties,Probability of Civilian Casualties,0,medium_4,4% Risk (Medium): Occasionally misidentifies civilian targets as military targets; poses a certain risk of accidental injury.,2,1
+border_defense,civilian_casualties,Probability of Civilian Casualties,0,low_0_5,0.5% Risk (Low): Rarely misidentifies civilians or civilian facilities; almost entirely eliminates the possibility of collateral damage.,1,2
+border_defense,timeliness,Operational Timeliness,1,realtime,"Real-time Analysis: i.e., zero delay.",1,0
+border_defense,timeliness,Operational Timeliness,1,one_minute,1 Minute: Slight delay.,2,1
+border_defense,timeliness,Operational Timeliness,1,five_minutes,5 Minutes: Significant delay.,3,2
+border_defense,accountability,Accountability Mechanism,,rnd_responsible,R&D Institution is Responsible.,,0
+border_defense,accountability,Accountability Mechanism,,commander_responsible,On-site Commander is Responsible.,,1
+border_defense,accountability,Accountability Mechanism,,national_immunity,Subject to National Immunity: Treated as a technical accident; no specific individuals or institutions are held accountable.,,2
+disease_diagnosis,rnd_institution,R&D Institution,,public,"Public R&D Institutions: e.g., public universities, government research institutes, etc.",,0
+disease_diagnosis,rnd_institution,R&D Institution,,domestic_private,"Domestic Private Institutions: e.g., private tech companies.",,1
+disease_diagnosis,rnd_institution,R&D Institution,,multinational,Multinational Tech Corporations.,,2
+disease_diagnosis,missed_diagnosis,Probability of Missed Diagnosis (False Negative Rate),0,high_18,"18% Risk (High): On average, 1 out of every 5-6 patients may be missed.",3,0
+disease_diagnosis,missed_diagnosis,Probability of Missed Diagnosis (False Negative Rate),0,medium_8,8% Risk (Medium): Occasional missed detections may occur in atypical cases.,2,1
+disease_diagnosis,missed_diagnosis,Probability of Missed Diagnosis (False Negative Rate),0,low_1,1% Risk (Low): Almost no potential patients are missed.,1,2
+disease_diagnosis,misdiagnosis,Probability of Misdiagnosis (False Positive Rate),0,high_22,22% Risk (High): May lead to a large number of healthy individuals receiving unnecessary treatment.,3,0
+disease_diagnosis,misdiagnosis,Probability of Misdiagnosis (False Positive Rate),0,medium_10,10% Risk (Medium): May lead to some healthy individuals being misdiagnosed and undergoing unnecessary treatment.,2,1
+disease_diagnosis,misdiagnosis,Probability of Misdiagnosis (False Positive Rate),0,low_0_5,0.5% Risk (Low): Effectively prevents healthy individuals from receiving unnecessary treatment.,1,2
+disease_diagnosis,efficiency,Diagnostic Efficiency,1,instant,Instant Results: Immediate turnaround.,1,0
+disease_diagnosis,efficiency,Diagnostic Efficiency,1,same_day,Same-Day Feedback.,2,1
+disease_diagnosis,efficiency,Diagnostic Efficiency,1,one_week,One-Week Feedback.,3,2
+disease_diagnosis,legal_accountability,Legal Accountability,,rnd_responsible,R&D Institution is Responsible.,,0
+disease_diagnosis,legal_accountability,Legal Accountability,,physician_responsible,Attending Physician and Medical Institution are Responsible.,,1
+disease_diagnosis,legal_accountability,Legal Accountability,,liability_waiver,Liability Waiver Clause: Treated as a technical accident; no specific individuals or institutions are held legally accountable.,,2

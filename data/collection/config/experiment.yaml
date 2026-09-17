@@ -1,0 +1,95 @@
+# =============================================================================
+# 实验总配置（Experiment configuration）
+# =============================================================================
+# 本文件是采集脚本的唯一实验参数来源。任何改动都会改变 design_id 的配置哈希，
+# 因此已跑过的 run 不会被静默改变：新参数 = 新 run_id = 新设计矩阵。
+#
+# 已确认的设计决策（2026-09-17 对齐会 + 苏宇轩 2026-09-18 确认）：
+#   Q3  注入法域：CN + US（中美主线），其余法域留作后续扩展
+#   Q4  语言：只做英文（en）
+#   Q5  口径：统一采用英文版 vignette / persona
+#   Q13 不使用思维链模型
+#   Q14 base_url 可切换（见 models.yaml）
+# =============================================================================
+
+meta:
+  project: "AI 联合实验的合成数据模拟"
+  design_note: >
+    对每个（条件 × 情景）单元生成 n_per_condition_scenario 个纯随机 conjoint 任务。
+    government 条件下注入官方 AI 法规文本作为 treatment。
+
+# --- 设计单元 ---------------------------------------------------------------
+cells:
+  # 每个（条件 × 情景）的目标样本量。government 条件的该数量在法域之间平衡分配。
+  # 4000 = 2 条件 × 2 情景 × 1000；若 jurisdiction_balance: full 则为 6000。
+  n_per_condition_scenario: 1000
+
+  # balanced：government 单元内 CN/US 各占一半（500/500）
+  # full    ：每个法域各跑满 n_per_condition_scenario（成本翻倍）
+  jurisdiction_balance: balanced
+
+  scenarios:
+    - border_defense
+    - disease_diagnosis
+
+  conditions:
+    - generic
+    - government
+
+  # Q3/Q4：本轮只做英文、只做法域 CN/US
+  languages:
+    - en
+
+  jurisdictions:
+    - CN
+    - US
+
+# --- 时段安排 ---------------------------------------------------------------
+# 不写自动 sleep 的守护进程：由人工在三个时段各触发一次，脚本记录 session 标签。
+# quota_share 决定每个单元在该时段要跑多少任务；任务索引区间由累积份额确定，
+# 因此三个时段的任务集合互不重叠、且可复现。
+sessions:
+  - label: morning
+    quota_share: 0.334
+    local_window: "08:00-11:00"
+  - label: afternoon
+    quota_share: 0.333
+    local_window: "13:00-17:00"
+  - label: evening
+    quota_share: 0.333
+    local_window: "20:00-23:30"
+
+# --- 锚点任务 ---------------------------------------------------------------
+# 每个单元内固定一组完全相同的任务，在三个时段各重复若干次。
+# 用途：把"时段差异"与"任务构成差异"分离开。主样本（n_per_condition_scenario）
+# 不含锚点，锚点永远是额外调用。
+anchors:
+  enabled: true
+  tasks_per_cell: 5
+  repeats_per_task: 12
+  # repeat_index % n_sessions -> 时段，保证重复均匀落在三个时段
+  session_assignment: round_robin
+
+# --- 调用节奏 ---------------------------------------------------------------
+runtime:
+  sleep_between_calls_s: [1.5, 3.0]   # 均匀抖动，避免限流并让时段内时刻自然分散
+  max_consecutive_errors: 8           # 连续失败超过该值则中止（避免烧钱空跑）
+  progress_every: 50
+  requests_per_minute_cap: 240        # 粗略限速上限，None 表示不限速
+
+# --- 答案协议 ---------------------------------------------------------------
+# free_text  : 完全按 Huhe 的 prompt 原样，靠解析器抽答案（默认，Q8=A）
+# choice_line: 追加一行 "End your response with ... CHOICE: A or CHOICE: B"
+# json       : 要求 JSON 输出（DeepSeek 要求提示词中出现 "json" 字样）
+answer_protocol: free_text
+
+# --- 采集守卫 ---------------------------------------------------------------
+# 真实调用前的强制检查，防止用未定稿的提示词或未确认的法规文本跑数据。
+guards:
+  require_frozen_prompts: true
+  require_confirmed_legal_texts: true
+
+# --- 命名 -------------------------------------------------------------------
+# 数据目录名（对应 2026-09-17 对齐会纪要）
+run_id_convention: "{date}_{model}_{condition}_{scenario}_{session}"
+default_model: deepseek-chat

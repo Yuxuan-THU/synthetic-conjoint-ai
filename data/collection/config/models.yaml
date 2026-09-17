@@ -1,0 +1,153 @@
+# =============================================================================
+# 模型注册表（Model registry）
+# =============================================================================
+# 只有 enabled: true 的模型能被采集脚本接受，其余为预置占位，等确认型号后再启用。
+#
+# 设计依据（2026-09-17 对齐会）：
+#   - 四模型设计：中美 × 开源/闭源。国外开源暂不单列，改用"同一模型的开源/闭源版本"
+#     来控制变量。
+#   - 主跑 DeepSeek（中国开源，试错成本低）。
+#   - 中国闭源候选：智谱 GLM（纪要倾向）；备选豆包。
+#   - 国外闭源由 Huhe 负责（OpenAI / Anthropic）。
+#   - Q13：本轮不使用任何思维链模型（deepseek-reasoner 保持 disabled）。
+#   - Q14：base_url 从环境变量读取，可指向官方 API 或校内/第三方转发。
+# =============================================================================
+
+api_defaults:
+  timeout_s: 180
+  max_retries: 5
+  retry_backoff_base_s: 2.0
+  retry_backoff_max_s: 60.0
+
+# 成本核算用的价格表（每 100 万 token，美元）。
+# ⚠️ 价格会变，只用于运行时的粗估与预警，论文里若报成本请以官方价格页当日价为准。
+# cache_hit 指 DeepSeek 的 prefix cache 命中价（自动生效，无需额外参数）。
+pricing:
+  deepseek-chat:
+    currency: USD
+    per_million:
+      prompt_cache_hit: 0.028
+      prompt_cache_miss: 0.28
+      completion: 0.42
+    as_of: "2026-09"
+    source: "https://api-docs.deepseek.com/quick_start/pricing"
+
+models:
+
+  # --- 主跑：中国开源 --------------------------------------------------------
+  deepseek-chat:
+    enabled: true
+    provider: deepseek
+    sdk: openai_compatible
+    label: "DeepSeek (deepseek-chat)"
+    origin: CN
+    openness: open_weight
+    base_url_env: DEEPSEEK_BASE_URL
+    base_url_default: "https://api.deepseek.com"
+    api_key_env: DEEPSEEK_API_KEY
+    params:
+      temperature: 1.0
+      top_p: 1.0
+      max_tokens: 512
+      stream: false
+      n: 1
+    notes: >
+      中国开源权重模型。官方 API 未提供 seed 参数，因此单次回答无法逐次复现；
+      这一点是设计事实，靠大样本 + 锚点重复来刻画回答的随机性。
+      温度取 1.0（官方默认），以保留模型自身的回答变异。
+
+  # --- 不启用：思维链模型 ----------------------------------------------------
+  deepseek-reasoner:
+    enabled: false            # Q13：不要任何思维链
+    provider: deepseek
+    sdk: openai_compatible
+    label: "DeepSeek (deepseek-reasoner)"
+    origin: CN
+    openness: open_weight
+    base_url_env: DEEPSEEK_BASE_URL
+    base_url_default: "https://api.deepseek.com"
+    api_key_env: DEEPSEEK_API_KEY
+    params:
+      max_tokens: 1024
+      stream: false
+      n: 1
+    notes: >
+      reasoner 不接受 temperature/top_p，且会返回 reasoning_content（思维链）。
+      按 Q13 决定保持停用。
+
+  # --- 中国闭源：待苏宇轩确认型号后启用 --------------------------------------
+  glm:
+    enabled: false
+    provider: zhipu
+    sdk: openai_compatible
+    label: "Zhipu GLM"
+    origin: CN
+    openness: closed
+    base_url_env: ZHIPUAI_BASE_URL
+    base_url_default: "https://open.bigmodel.cn/api/paas/v4"
+    api_key_env: ZHIPUAI_API_KEY
+    params:
+      temperature: 1.0
+      top_p: 1.0
+      max_tokens: 512
+      stream: false
+      n: 1
+    notes: >
+      待确认具体型号串（如 glm-4.6 / glm-4-plus）后启用；model 字段需与厂商文档一致。
+      model_name_override 用于填写实际请求时要传的 model 名。
+
+  # --- 中国闭源备选 ----------------------------------------------------------
+  doubao:
+    enabled: false
+    provider: volcengine_ark
+    sdk: openai_compatible
+    label: "Doubao (Volcengine Ark)"
+    origin: CN
+    openness: closed
+    base_url_env: ARK_API_KEY
+    base_url_default: "https://ark.cn-beijing.volces.com/api/v3"
+    api_key_env: ARK_API_KEY
+    params:
+      temperature: 1.0
+      top_p: 1.0
+      max_tokens: 512
+      stream: false
+      n: 1
+    notes: >
+      备选方案。火山方舟需要传 endpoint id（ep-...）而不是模型名，
+      因此必须用 model_name_override。
+
+  # --- 国外闭源：Huhe 负责 ---------------------------------------------------
+  openai-flagship:
+    enabled: false
+    provider: openai
+    sdk: openai_compatible
+    label: "OpenAI flagship"
+    origin: US
+    openness: closed
+    base_url_env: OPENAI_BASE_URL
+    base_url_default: "https://api.openai.com/v1"
+    api_key_env: OPENAI_API_KEY
+    params:
+      temperature: 1.0
+      max_tokens: 512
+      stream: false
+      n: 1
+    notes: >
+      待 Huhe 提供具体型号与版本串（用于复现的快照名）。model_name_override 必填。
+
+  anthropic-flagship:
+    enabled: false
+    provider: anthropic
+    sdk: anthropic
+    label: "Anthropic Claude"
+    origin: US
+    openness: closed
+    api_key_env: ANTHROPIC_API_KEY
+    params:
+      temperature: 1.0
+      max_tokens: 512
+      stream: false
+    notes: >
+      待 Huhe 提供具体型号与版本串。Anthropic SDK 的 system prompt 是独立参数，
+      providers.py 已单独处理。注意：Anthropic 官方建议温度与 top_p 不同时设置。

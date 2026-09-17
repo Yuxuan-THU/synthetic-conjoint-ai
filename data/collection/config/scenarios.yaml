@@ -1,0 +1,189 @@
+# =============================================================================
+# 联合实验的情景与属性表（Conjoint instrument）
+# =============================================================================
+# 来源：data/raw/instrument/AI 联合分析实验.docx（Huhe 版问卷）
+# 口径：Q5 决定统一采用英文版 vignette / persona，中文版不再使用。
+#      注：docx 中文版写"公众代表"，英文版写"Deputy to the National People's Congress"，
+#          二者并非等价翻译；采用英文版作为唯一口径。
+#
+# 属性表说明：
+#   - 本节内容对应 docx 中标注"不读出，只用于产生随机 conjoint task"的 attribute table。
+#   - 每条 label_en 必须与 docx 中的完整描述一致——描述文本本身是 treatment 的一部分。
+#   - dominance_rank 仅用于诊断"被支配方案"占比（Q11），不参与实验设计：
+#       1 = 该维度上更好；数字越小越好；null = 无法给出可辩护的序（不参与支配判断）。
+#   - higher_is_better 只用于画图时的方向标注。
+#
+# 随机化规则（见 docs/01_design-spec.md §2 与 docx 批注）：
+#   - 每个属性独立抽样；
+#   - 同一属性上甲、乙两方案的取值必须不同（有序不放回抽样 → 6 种有序对等概率）；
+#   - 属性行序随机；
+#   - 甲/乙语义位的分配由有序对抽样天然随机化（无需额外的位置随机化参数）。
+# =============================================================================
+
+scenarios:
+
+  # ---------------------------------------------------------------------------
+  - id: border_defense
+    label_en: "AI Border Defense System Assessment (Night Falcon)"
+    label_zh: "AI 边境防御系统评估（夜隼）"
+    vignette_en: >-
+      Imagine you are a Deputy to the National People's Congress serving on the National
+      Security Commission. The government is currently deliberating the deployment of a
+      UAV AI reconnaissance system named "Night Falcon," designed to identify enemy
+      military targets in border conflict zones. Because of differences in AI datasets
+      and learning methodologies, various systems offer different levels of safety and
+      operational effectiveness. You are asked to evaluate the following potential
+      scenarios and select the system you believe is most appropriate for deployment.
+    attributes:
+      - id: rnd_institution
+        label_en: "R&D Institution"
+        higher_is_better: null
+        levels:
+          - id: public
+            label_en: "Public R&D Institutions: e.g., public universities, government research institutes, etc."
+            dominance_rank: null
+          - id: domestic_private
+            label_en: "Domestic Private Institutions: e.g., private tech companies."
+            dominance_rank: null
+          - id: multinational
+            label_en: "Multinational Tech Corporations."
+            dominance_rank: null
+
+      - id: miss_military
+        label_en: "Probability of Missing Military Targets"
+        higher_is_better: false
+        levels:
+          - id: high_15
+            label_en: "15% Risk (High): Frequently fails to identify camouflaged targets, resulting in a high rate of missed detections."
+            dominance_rank: 3
+          - id: medium_5
+            label_en: "5% Risk (Medium): Occasionally misses targets under complex weather conditions; recognition stability is average."
+            dominance_rank: 2
+          - id: low_1
+            label_en: "1% Risk (Low): Rarely misses targets; capable of precise identification in almost any environment."
+            dominance_rank: 1
+
+      - id: civilian_casualties
+        label_en: "Probability of Civilian Casualties"
+        higher_is_better: false
+        levels:
+          - id: high_12
+            label_en: "12% Risk (High): Frequently misidentifies civilian targets as military targets, threatening civilian safety."
+            dominance_rank: 3
+          - id: medium_4
+            label_en: "4% Risk (Medium): Occasionally misidentifies civilian targets as military targets; poses a certain risk of accidental injury."
+            dominance_rank: 2
+          - id: low_0_5
+            label_en: "0.5% Risk (Low): Rarely misidentifies civilians or civilian facilities; almost entirely eliminates the possibility of collateral damage."
+            dominance_rank: 1
+
+      - id: timeliness
+        label_en: "Operational Timeliness"
+        higher_is_better: true
+        levels:
+          - id: realtime
+            label_en: "Real-time Analysis: i.e., zero delay."
+            dominance_rank: 1
+          - id: one_minute
+            label_en: "1 Minute: Slight delay."
+            dominance_rank: 2
+          - id: five_minutes
+            label_en: "5 Minutes: Significant delay."
+            dominance_rank: 3
+
+      - id: accountability
+        label_en: "Accountability Mechanism"
+        higher_is_better: null
+        levels:
+          - id: rnd_responsible
+            label_en: "R&D Institution is Responsible."
+            dominance_rank: null
+          - id: commander_responsible
+            label_en: "On-site Commander is Responsible."
+            dominance_rank: null
+          - id: national_immunity
+            label_en: "Subject to National Immunity: Treated as a technical accident; no specific individuals or institutions are held accountable."
+            dominance_rank: null
+
+  # ---------------------------------------------------------------------------
+  - id: disease_diagnosis
+    label_en: "AI Lethal Disease Diagnostic System Assessment (IntelliMind)"
+    label_zh: "AI 致命疾病诊断系统评估（灵智）"
+    vignette_en: >-
+      Imagine you are serving as a public representative for the local Health Commission.
+      A hospital has applied to implement an AI-assisted diagnostic system named
+      "IntelliMind" to detect a specific type of cancer that has an extremely high
+      mortality rate but is curable if identified early. Due to differences in AI
+      datasets and algorithmic models, each version of the system involves different
+      trade-offs between accuracy and safety. You are asked to evaluate the following
+      potential options and select the system you believe is most appropriate for use.
+    attributes:
+      - id: rnd_institution
+        label_en: "R&D Institution"
+        higher_is_better: null
+        levels:
+          - id: public
+            label_en: "Public R&D Institutions: e.g., public universities, government research institutes, etc."
+            dominance_rank: null
+          - id: domestic_private
+            label_en: "Domestic Private Institutions: e.g., private tech companies."
+            dominance_rank: null
+          - id: multinational
+            label_en: "Multinational Tech Corporations."
+            dominance_rank: null
+
+      - id: missed_diagnosis
+        label_en: "Probability of Missed Diagnosis (False Negative Rate)"
+        higher_is_better: false
+        levels:
+          - id: high_18
+            label_en: "18% Risk (High): On average, 1 out of every 5-6 patients may be missed."
+            dominance_rank: 3
+          - id: medium_8
+            label_en: "8% Risk (Medium): Occasional missed detections may occur in atypical cases."
+            dominance_rank: 2
+          - id: low_1
+            label_en: "1% Risk (Low): Almost no potential patients are missed."
+            dominance_rank: 1
+
+      - id: misdiagnosis
+        label_en: "Probability of Misdiagnosis (False Positive Rate)"
+        higher_is_better: false
+        levels:
+          - id: high_22
+            label_en: "22% Risk (High): May lead to a large number of healthy individuals receiving unnecessary treatment."
+            dominance_rank: 3
+          - id: medium_10
+            label_en: "10% Risk (Medium): May lead to some healthy individuals being misdiagnosed and undergoing unnecessary treatment."
+            dominance_rank: 2
+          - id: low_0_5
+            label_en: "0.5% Risk (Low): Effectively prevents healthy individuals from receiving unnecessary treatment."
+            dominance_rank: 1
+
+      - id: efficiency
+        label_en: "Diagnostic Efficiency"
+        higher_is_better: true
+        levels:
+          - id: instant
+            label_en: "Instant Results: Immediate turnaround."
+            dominance_rank: 1
+          - id: same_day
+            label_en: "Same-Day Feedback."
+            dominance_rank: 2
+          - id: one_week
+            label_en: "One-Week Feedback."
+            dominance_rank: 3
+
+      - id: legal_accountability
+        label_en: "Legal Accountability"
+        higher_is_better: null
+        levels:
+          - id: rnd_responsible
+            label_en: "R&D Institution is Responsible."
+            dominance_rank: null
+          - id: physician_responsible
+            label_en: "Attending Physician and Medical Institution are Responsible."
+            dominance_rank: null
+          - id: liability_waiver
+            label_en: "Liability Waiver Clause: Treated as a technical accident; no specific individuals or institutions are held legally accountable."
+            dominance_rank: null
