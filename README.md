@@ -45,7 +45,7 @@ python replication/run_all.py --include-collection  # 含数据采集（会真�
 
 | 文件 | 内容 |
 |---|---|
-| `docs/00_work-plan.md` | 完整工作方案 + 待确认问题 Q1–Q20 |
+| `docs/00_work-plan.md` | 完整工作方案 + 待确认问题 Q1–Q21 |
 | `docs/01_design-spec.md` | 随机化算法、渲染规则、字段规格（代码实现依据） |
 | `docs/02_prompt-freeze.md` | 提示词版本冻结记录 |
 | `docs/03_meeting-notes-2026-09-17.md` | 2026-09-17 技术对齐会纪要（含逐字稿） |
