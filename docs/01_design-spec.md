@@ -59,42 +59,52 @@ attr_order = rng.sample(scenario.attribute_ids, 5)   # 属性行序随机（批�
 
 ---
 
-## 3. 任务屏渲染（render.py）
+## 3. 消息渲染（render.py）
 
-一张任务屏 = 情景 vignette + 属性表 + 二选一提问。渲染顺序：
+一次调用的消息 = system prompt + user message（法规材料块 + 情景 vignette + 任务屏）。渲染顺序：
 
 ```
 [system prompt]                       ← prompts.yaml，条件相关
 [user message]                        ← 顺序固定，保证 prefix cache 命中
-   1) 情景 vignette（按 language 取 zh/en）
-   2) [仅 government 条件] 法规全文（law_texts/*.txt，带标题与来源行）
-   3) 任务屏：属性表（按 attr_order 排列；列头 方案甲/方案乙 或呈现位标签）
-   4) 提问句 + 答案格式指令（按 answer_protocol）
+   1) [仅 government 条件] 法规材料块（law_texts/*.txt 全文，带 id 与标题行）
+   2) 情景 vignette（按 language 取 zh/en）
+   3) 任务屏引言
+   4) 任务屏：属性表（按 attr_order 排列；列头 Option A / Option B）
+   5) 提问句 + 答案格式指令（按 answer_protocol）
 ```
 
+- 第 1)–3) 段构成 prompt 前缀（同一条件与情景内逐次不变，只归档一次）；第 4)–5) 段构成任务屏（逐任务不同）。
 - 属性表用纯文本或 Markdown 表格均可，**同一 run 内必须固定一种**（记为 `render_style`）。
 - 水平文本必须使用 attribute table 中给出的**完整描述**（不是缩写），因为描述本身是 treatment 的一部分。
-- 法规插入位置放在"情景之后、任务之前"，理由：法规对全部任务不变 → 落在 prefix 稳定区，最大限度命中缓存。
+- 法规材料块放在**最前（情景之前）**：内容对全部任务不变 → 落在 prefix 稳定区，最大限度命中缓存（2026-09-18 定稿顺序，`render.py` 即按此实现）。
 
-### 3.1 英文任务屏示例（border_defense，仅示意）
+### 3.1 英文消息示例（government 条件，border_defense，仅示意）
 
 ```
+The following regulations and official guidance are attached. They establish the
+institutional and regulatory framework that governs your recommendation.
+
+<<<ATTACHED_MATERIALS
+[<law_text_id>] <title_en> (<jurisdiction>)
+
+<法规全文>
+ATTACHED_MATERIALS>>>
+
 Imagine you are ... (vignette)
 
-[Attached materials: <法规标题>, <来源>, <sha256 前 8 位>]
-...<法规全文>...
-
-Please review the two options below and choose the one you consider most
-appropriate.
+Please review the two options below. Each option is a different version of the
+same system, described by the following performance characteristics.
 
 | Performance characteristic | Option A | Option B |
 |---|---|---|
 | R&D Institution | Public R&D institutions ... | Multinational tech corporations |
 | ... | ... | ... |
 
-Which option do you choose? Respond with your choice and a short explanation
-(50 words or fewer) in English.
+Which option do you choose? Respond with your choice (Option A or Option B)
+followed by a short explanation.
 ```
+
+generic 条件没有法规材料块，其余相同。
 
 ---
 
@@ -139,7 +149,7 @@ Which option do you choose? Respond with your choice and a short explanation
 
 - `data/raw/responses/_prompt_archive.jsonl`：只对**唯一前缀**写一行，键为
   `prompt_archive_id = sha256(system_prompt + "\n\n" + prefix_text)[:16]`，
-  内容为该前缀的完整文本（system prompt + vignette + 法规全文 + 固定的提问句）。
+  内容为该前缀的完整文本（system prompt + 法规材料块 + 情景 vignette + 任务屏引言）。
 
   ⚠️ 必须把 **system prompt 一起纳入哈希**：条件差异就写在 system prompt 里，
   只哈希 user 前缀会让 generic 与 government 撞到同一个 id（这个 bug 真实发生过，

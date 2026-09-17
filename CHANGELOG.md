@@ -52,9 +52,12 @@
 
 ### 文档
 
+- 提示词定稿并冻结：`prompts.yaml` 的 `generic_v1` / `government_v1` 状态改为 `frozen`（2026-09-18），移除与 Huhe 原稿的差异对照段；`docs/02_prompt-freeze.md` 只保留当前版本的完整正文（system prompt 全文 + sha256 + 消息结构 + 输出约定）。
+- `docs/01_design-spec.md` 修正渲染顺序为「法规材料块 → 情景 vignette → 任务屏」（与 `render.py` 实现一致；原规格写作“情景之后”），并同步更新 §3.1 示例与 §6.1 前缀描述。
+- README 新增「文件地图」：逐目录、逐文件说明职责、数据流位置、生成时机与是否提交，并标明运行时文件的命名规律；同步修正「数据与隐私」对 `.gitignore` 例外的表述。
 - 新增 `docs/00_work-plan.md`：完整工作方案，含实验因子结构、样本量、提示词方案、法规文本问题清单、成本估算、执行安排、字段字典、分析计划、里程碑、风险清单、Q1–Q21 待确认问题，以及 §15 代码交付清单与运行手册。
 - 新增 `docs/01_design-spec.md`：任务随机化算法与不变量、三个指纹的空间定义、渲染顺序、提示词版本控制、法规文本 manifest 规格、响应落盘与前缀归档规格、分析数据规格。
-- 新增 `docs/02_prompt-freeze.md`：`generic_v1` / `government_v1` 两版提示词、与 Huhe 原稿的 5 处差异说明及理由、答案协议说明、版本登记表。
+- 新增 `docs/02_prompt-freeze.md`：`generic_v1` / `government_v1` 两版提示词的完整冻结正文（system prompt 全文与 sha256、调用消息结构、输出约定），可直接复制使用。
 - 建立 `docs/project-notes.md`：研究问题、四条初步假设、变量操作化、分析计划与决策日志。
 - 归档 2026-09-17 技术对齐会纪要至 `docs/03_meeting-notes-2026-09-17.md`。
 - `replication/MANIFEST.csv` 登记 18 项产物与对应脚本、输入数据。
@@ -71,6 +74,5 @@
 
 ### 待完成
 
-- 提示词定稿（`draft` → `frozen`）。
 - 法规文本人工确认（`review_status: huhe_confirmed`）；US 文本篇幅处理方式待定（NIST AI RMF ≈ 2.6 万 token，是中国法规的约 10 倍，本身构成混淆）。
 - 真实调用 DeepSeek 主跑 4 360 次（三时段），以及后续 GLM / OpenAI / Anthropic 复跑。

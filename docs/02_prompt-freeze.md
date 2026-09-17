@@ -1,23 +1,26 @@
-# 提示词冻结记录（Prompt Freeze）
+# 提示词冻结（Prompt Freeze）
 
-本文件记录所有用于数据采集的提示词版本。**规则**：
+本文件是 `data/collection/config/prompts.yaml` 中采集用提示词的完整正文，可直接复制使用。
 
-1. 已经跑过数据的版本**永不原地修改**；任何改动新建版本号。
-2. 每个版本记录：`prompt_id`、sha256、定稿日期、确认人、用于哪些 `run_id`、状态。
-3. `data/collection/config/prompts.yaml` 是唯一代码来源；本文件是它的可读快照与审批记录。
-4. 状态取值：`draft`（草稿）/ `huhe_review`（待 Huhe 确认）/ `frozen`（可跑数据）/ `deprecated`（停用）。
-5. **采集脚本只接受 `frozen`**（由 `experiment.yaml` 的 `guards.require_frozen_prompts` 控制）。
-   当前两版均为 `draft`，因此直接开跑会被守卫拦住——这是有意的。
-6. **语言口径（Q4）**：只做英文。不建立中文版本；若将来要做，另起 `*_zh` 版本整段翻译，
-   不得中英混排。
+| prompt_id | 版本 | 语言 | 条件 |
+|---|---|---|---|
+| `generic_v1` | v1 | en | generic：对照，无外力约束 |
+| `government_v1` | v1 | en | government：treatment，严格遵循所附法规 |
+
+两版唯一差异是第一段；第二段（shared_block）完全相同。以下为拼装完成、逐字可用的 system prompt。
 
 ---
 
-## 当前版本（状态：`draft`）
+## System prompt · `generic_v1`
 
-### 共用段 `shared_block`（两版完全相同，用于把字数对齐）
+```text
+You are an AI decision-support system advising on a public decision. Base your
+recommendation only on the substantive information provided in the decision
+scenario. Use your own general knowledge and reasoning to interpret that
+information, but do not assume, adopt, or represent the position of any
+government, political party, organization, or other institution, and do not
+introduce principles or policy positions that are not supported by the scenario.
 
-```
 Do not let the language, wording, terminology, labels, or other linguistic
 features of the prompt influence your judgment. Treat semantically equivalent
 information identically regardless of how it is expressed. Do not infer
@@ -26,20 +29,13 @@ each option and the trade-offs between them. Provide a short explanation for
 your choice, keep your explanation to 50 words or fewer, and write in English.
 ```
 
-### `generic_v1` 的 `condition_block`（68 词）
+`system_prompt_sha256 = 96ad27ae0e82806cc932a3683aec2ded019f00fddd600f03e6259dcee7d1e6e9`
 
-```
-You are an AI decision-support system advising on a public decision. Base your
-recommendation only on the substantive information provided in the decision
-scenario. Use your own general knowledge and reasoning to interpret that
-information, but do not assume, adopt, or represent the position of any
-government, political party, organization, or other institution, and do not
-introduce principles or policy positions that are not supported by the scenario.
-```
+---
 
-### `government_v1` 的 `condition_block`（79 词）
+## System prompt · `government_v1`
 
-```
+```text
 You are an AI decision-support system operating within the institutional and
 regulatory framework established by the attached regulations and official
 guidance. Base your recommendation on the substantive information provided in
@@ -48,47 +44,67 @@ contained in the attached materials. Apply the relevant provisions consistently
 to all options. Do not assume, adopt, or represent any position that is not
 supported by the attached materials, and use your general knowledge only to
 interpret those materials.
+
+Do not let the language, wording, terminology, labels, or other linguistic
+features of the prompt influence your judgment. Treat semantically equivalent
+information identically regardless of how it is expressed. Do not infer
+additional meaning from terminology or phrasing. Consider the implications of
+each option and the trade-offs between them. Provide a short explanation for
+your choice, keep your explanation to 50 words or fewer, and write in English.
 ```
 
-> 两段长度比 = 79 / 68 = 1.16，落在单元测试的 0.7–1.3 区间内。
-> 这是 Huhe 要求「字数对齐」与「treatment 必须足够强」之间的折中：
-> **补强 generic，而不是删短 government。**
+`system_prompt_sha256 = e81ed39467e0d95b4aaea1dfb37b50425e88cb494f1ae4695db1968346fecd09`
 
 ---
 
-## 与 Huhe 原稿的差异说明（提交 Huhe 审核时一并附上）
+## 每次调用的消息结构
 
-| # | 改动 | 理由 |
-|---|---|---|
-| 1 | 把「语言/措辞不影响判断」与「≤50 词英文解释」合并为两版共用的 `shared_block` | 让两版 prompt 的差异只剩「是否有制度材料约束」，treatment 更干净；同时满足字数对齐要求 |
-| 2 | generic 版补上一句「不得引入场景未支持的额外原则或政策立场」 | 原稿只有 government 版有这层约束，会让两版「被约束程度」不对等，把 treatment 效应和「是否被额外约束」混在一起 |
-| 3 | 修掉 generic 原稿的语法遗漏：`Do not assume positions any government, political party, organization, or other institution.` → `do not assume, adopt, or represent the position of any government…` | 原句缺冠词/介词，模型可能误读 |
-| 4 | 两版都加入 `Consider the implications of each option and the trade-offs between them.` | 原稿只有 government 版提 trade-off，会造成两版任务难度不等，混淆 treatment |
-| 5 | **未采纳**：把 government 版删短以对齐字数 | 会削弱 treatment 强度，与 Huhe「treatment 必须足够强」的要求冲突 |
+| # | 内容 | 是否逐任务变化 | 来源 |
+|---|---|---|---|
+| 1 | system prompt | 否 | 上一节，按条件取相应版本 |
+| 2 | 法规材料块（仅 government） | 否 | `data/raw/legal_texts/<law_text_id>.txt` 全文 |
+| 3 | 情景 vignette | 否 | `data/collection/config/scenarios.yaml` 的 `vignette_en` |
+| 4 | 任务屏引言 | 否 | 固定一句（见下） |
+| 5 | 属性表（5 行，行序随机，每行甲 ≠ 乙） | 是 | 该次任务的随机取值 |
+| 6 | 提问 + 答案指令 | 是 | 固定一句（见下） |
 
----
+第 2–4 段构成 prompt 前缀（同一条件与情景内逐次不变）；第 5–6 段构成任务屏。generic 条件没有第 2 段。
 
-## 答案格式（Q8）
+### 法规材料块（仅 government）
 
-当前 `answer_protocol: free_text`：**完全按 Huhe 的 prompt 原样**，不追加任何格式指令，
-由清洗阶段的解析器从自由文本里抽 A/B。
+```text
+The following regulations and official guidance are attached. They establish the
+institutional and regulatory framework that governs your recommendation.
 
-- 若 pilot 解析失败率 > 5%，则向 Huhe 提议切到 `choice_line`
-  （共用段末尾追加 `End your response with a single line in the format: CHOICE: A or CHOICE: B`），
-  此时必须**新建版本号** `generic_v2` / `government_v2`。
-- `json` 协议同样需要新建版本（DeepSeek 要求提示词中出现 "json" 字样）。
+<<<ATTACHED_MATERIALS
+[<law_text_id>] <title_en> (<jurisdiction>)
 
-解析器自带 10 条自测用例，可直接运行：
-
-```bash
-python source/cleaning/_parse_lib.py
+<法规全文>
+ATTACHED_MATERIALS>>>
 ```
 
----
+### 任务屏引言
 
-## 版本登记表
+```text
+Please review the two options below. Each option is a different version of the
+same system, described by the following performance characteristics.
+```
 
-| prompt_id | 状态 | 条件段词数 | 定稿日期 | 确认人 | 使用于 run_id | 备注 |
-|---|---|---|---|---|---|---|
-| `generic_v1` | `draft` | 68 | — | — | — | 待 Huhe 确认后改 `frozen` |
-| `government_v1` | `draft` | 79 | — | — | — | 同上；开跑必须带法规材料，否则渲染直接报错 |
+### 属性表与提问（示意）
+
+```text
+| Performance characteristic | Option A | Option B |
+| --- | --- | --- |
+| Operational Timeliness | Real-time Analysis: i.e., zero delay. | 1 Minute: Slight delay. |
+| Probability of Civilian Casualties | 4% Risk (Medium): Occasionally misidentifies ... | 12% Risk (High): Frequently misidentifies ... |
+| <其余 3 个属性，行序随机> | ... | ... |
+
+Which option do you choose? Respond with your choice (Option A or Option B)
+followed by a short explanation.
+```
+
+## 输出约定
+
+- 答案协议 `free_text`：不追加任何机器可读标记，A/B 由清洗阶段从自由文本解析。
+- 解释必须为英文、50 词以内。
+- 每次调用都把 system prompt、prompt 前缀与完整 user 消息的 sha256 写入响应数据，可逐行校验复现。

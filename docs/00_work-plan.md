@@ -1,9 +1,4 @@
-# 工作方案 v1（待确认）
-
-> 项目：AI 联合实验（conjoint experiment）的合成数据模拟
-> 参与人：苏宇轩、Huhe 老师、孟老师
-> 依据材料：`docs/03_meeting-notes-2026-09-17.md`（技术对齐会）、`data/raw/instrument/AI 联合分析实验.docx`（联合实验问卷与 attribute table）、`../ai legal text/`（9 个法域的 AI 法律文本）
-> 本稿状态：**方案稿，等苏宇轩确认后再写代码**。文末 Q1–Q21 是需要拍板的问题。
+# 工作方案 v1
 
 ---
 
@@ -15,20 +10,22 @@
 
 ## 1. 已定的设计（会议纪要 + docx 批注，不再讨论）
 
-| 项 | 内容 | 来源 |
-|---|---|---|
-| 研究工具 | 两个情景的 conjoint：①AI 边境防御系统评估（"夜隼"）②AI 致命疾病诊断系统评估（"灵智"） | docx |
-| 任务形式 | 一次任务 = 屏幕呈现两个方案（甲/乙）的 5 个属性 → 强制二选一 + ≤50 词英文解释 | docx + 纪要 |
-| 属性结构 | 每情景 5 个属性 × 3 个水平 | docx |
-| 随机化 | **纯随机**，不做正交/高效设计；属性展示顺序随机；每个属性上甲乙两方案的取值**必须不同** | docx 批注 |
-| 记忆 | 每次调用 context-free / memory-free，不带历史 | 纪要 00:17 |
-| 条件（treatment） | generic/raw AI（无外力）vs government AI（严格遵循所附法规文本） | 纪要 01:32–07:16 |
-| 模型 | 主跑 DeepSeek（中国开源）；后续 智谱 GLM/豆包（中国闭源）、OpenAI 或 Anthropic（美国闭源） | 纪要 07:16–11:36 |
-| 重复次数 | ~1000 次选择/条件；同一 identical 任务也可能给出不同回答，所以要留余量检验 | 纪要 11:16–20:00 |
-| 时段 | 早/中/晚三段（≈300+300+300），或至少"工作时间 vs 非工作时间"（北京时间） | 纪要 11:16–14:23 |
-| 输出变量 | ①调用时间 ②随机任务内容（甲乙两方案）③AI 的选择 ④AI 的回应文本 | 纪要 23:16–25:16 |
-| 分工 | 苏：写代码、改 prompt、定国内闭源模型；Huhe：国外闭源模型、两段 prompt draft、conjoint 分析 code、论文起草 | 纪要 待办 |
-| 时间线 | 10/1 前把代码发给 Huhe → 先发 running script 确认 → DeepSeek 试跑 → 闭源模型重复 → 目标 11 月投出 | 纪要 25:16–27:31 |
+
+| 项             | 内容                                                                         | 来源             |
+| ------------- | -------------------------------------------------------------------------- | -------------- |
+| 研究工具          | 两个情景的 conjoint：①AI 边境防御系统评估（"夜隼"）②AI 致命疾病诊断系统评估（"灵智"）                      | docx           |
+| 任务形式          | 一次任务 = 屏幕呈现两个方案（甲/乙）的 5 个属性 → 强制二选一 + ≤50 词英文解释                            | docx + 纪要      |
+| 属性结构          | 每情景 5 个属性 × 3 个水平                                                          | docx           |
+| 随机化           | **纯随机**，不做正交/高效设计；属性展示顺序随机；每个属性上甲乙两方案的取值**必须不同**                           | docx 批注        |
+| 记忆            | 每次调用 context-free / memory-free，不带历史                                       | 纪要 00:17       |
+| 条件（treatment） | generic/raw AI（无外力）vs government AI（严格遵循所附法规文本）                            | 纪要 01:32–07:16 |
+| 模型            | 主跑 DeepSeek（中国开源）；后续 智谱 GLM/豆包（中国闭源）、OpenAI 或 Anthropic（美国闭源）              | 纪要 07:16–11:36 |
+| 重复次数          | ~1000 次选择/条件；同一 identical 任务也可能给出不同回答，所以要留余量检验                             | 纪要 11:16–20:00 |
+| 时段            | 早/中/晚三段（≈300+300+300），或至少"工作时间 vs 非工作时间"（北京时间）                             | 纪要 11:16–14:23 |
+| 输出变量          | ①调用时间 ②随机任务内容（甲乙两方案）③AI 的选择 ④AI 的回应文本                                      | 纪要 23:16–25:16 |
+| 分工            | 苏：写代码、改 prompt、定国内闭源模型；Huhe：国外闭源模型、两段 prompt draft、conjoint 分析 code、论文起草   | 纪要 待办          |
+| 时间线           | 10/1 前把代码发给 Huhe → 先发 running script 确认 → DeepSeek 试跑 → 闭源模型重复 → 目标 11 月投出 | 纪要 25:16–27:31 |
+
 
 ### 1.1 docx 批注里额外发现的三条硬约束
 
@@ -47,23 +44,27 @@
 
 ### 情景 A：AI 边境防御系统评估（"夜隼 / Night Falcon"）
 
-| 属性 | 水平 1 | 水平 2 | 水平 3 |
-|---|---|---|---|
-| 研发机构 R&D Institution | 公共研发机构（公立大学、政府研究机构等） | 国内私营机构（私营科技公司） | 跨国科技企业 |
-| 漏报军事目标概率 | 15%（高）经常无法识别伪装目标，漏报频率较高 | 5%（中）偶尔在复杂天气下漏掉目标 | 1%（低）几乎任何环境都能精准识别 |
-| 误伤平民目标概率 | 12%（高）经常把民用目标误认为军事目标 | 4%（中）偶尔误认，存在一定误伤风险 | 0.5%（低）极少误认，基本杜绝误伤 |
-| 作战时效 | 实时分析（无延迟） | 1 分钟（轻微延迟） | 5 分钟（较长延迟） |
-| 问责机制 | 研发机构负责 | 现场指挥员负责 | 纳入国家豁免（视为技术意外，不追究责任） |
+
+| 属性                       | 水平 1                    | 水平 2               | 水平 3                 |
+| ------------------------ | ----------------------- | ------------------ | -------------------- |
+| 研发机构 R&amp;D Institution | 公共研发机构（公立大学、政府研究机构等）    | 国内私营机构（私营科技公司）     | 跨国科技企业               |
+| 漏报军事目标概率                 | 15%（高）经常无法识别伪装目标，漏报频率较高 | 5%（中）偶尔在复杂天气下漏掉目标  | 1%（低）几乎任何环境都能精准识别    |
+| 误伤平民目标概率                 | 12%（高）经常把民用目标误认为军事目标    | 4%（中）偶尔误认，存在一定误伤风险 | 0.5%（低）极少误认，基本杜绝误伤   |
+| 作战时效                     | 实时分析（无延迟）               | 1 分钟（轻微延迟）         | 5 分钟（较长延迟）           |
+| 问责机制                     | 研发机构负责                  | 现场指挥员负责            | 纳入国家豁免（视为技术意外，不追究责任） |
+
 
 ### 情景 B：AI 致命疾病诊断系统评估（"灵智 / IntelliMind"）
 
-| 属性 | 水平 1 | 水平 2 | 水平 3 |
-|---|---|---|---|
-| 研发机构 R&D Institution | 公共研发机构 | 国内私营机构 | 跨国科技企业 |
-| 漏诊概率（假阴性） | 18%（高）平均每 5–6 名患者漏掉 1 人 | 8%（中）非典型案例偶发漏报 | 1%（低）几乎不漏 |
-| 误诊概率（假阳性） | 22%（高）大量健康人接受不必要的治疗 | 10%（中）部分健康人被误诊 | 0.5%（低）有效防止不必要治疗 |
-| 诊疗效率 | 即时出结果 | 当天反馈 | 一周后反馈 |
-| 法律问责制 | 研发机构负责 | 主治医生及医疗机构负责 | 引入免责条款（视为技术意外，不追究责任） |
+
+| 属性                       | 水平 1                    | 水平 2           | 水平 3                 |
+| ------------------------ | ----------------------- | -------------- | -------------------- |
+| 研发机构 R&amp;D Institution | 公共研发机构                  | 国内私营机构         | 跨国科技企业               |
+| 漏诊概率（假阴性）                | 18%（高）平均每 5–6 名患者漏掉 1 人 | 8%（中）非典型案例偶发漏报 | 1%（低）几乎不漏            |
+| 误诊概率（假阳性）                | 22%（高）大量健康人接受不必要的治疗     | 10%（中）部分健康人被误诊 | 0.5%（低）有效防止不必要治疗     |
+| 诊疗效率                     | 即时出结果                   | 当天反馈           | 一周后反馈                |
+| 法律问责制                    | 研发机构负责                  | 主治医生及医疗机构负责    | 引入免责条款（视为技术意外，不追究责任） |
+
 
 > ⚠️ **中英文 vignette 不一致**：中文写"想象你正担任**公众代表**"，英文写"you are a **Deputy to the National People's Congress** serving on the National Security Commission"。两者不是语义等价的翻译，直接违反 prompt 里"treat semantically equivalent information identically"的要求。见 Q5。
 
@@ -82,11 +83,13 @@
 
 **DeepSeek 主跑建议**（成本极低，见 §7）：
 
-| 单元 | 次数 | 说明 |
-|---|---|---|
-| 2 条件 × 2 情景 × 1000 | 4 000 | 覆盖 Q6 的"每格 1000"口径 |
-| 锚点任务（固定 15 个任务 × 10 次重复 × 3 时段） | 450 | 专门用来分离"时段效应"和"任务构成效应" |
-| 小计 | **≈4 450 次调用** | 若 Q4 决定加中文版，则 ×2 ≈ 8 900 |
+
+| 单元                              | 次数             | 说明                       |
+| ------------------------------- | -------------- | ------------------------ |
+| 2 条件 × 2 情景 × 1000              | 4 000          | 覆盖 Q6 的"每格 1000"口径       |
+| 锚点任务（固定 15 个任务 × 10 次重复 × 3 时段） | 450            | 专门用来分离"时段效应"和"任务构成效应"    |
+| 小计                              | **≈4 450 次调用** | 若 Q4 决定加中文版，则 ×2 ≈ 8 900 |
+
 
 锚点任务的设计理由：如果不同时段的调用只是"随机任务不同"，那时段差异会和任务内容差异混淆。固定一组完全相同的任务在每个时段各跑一遍，才能干净地估计"同一任务在不同时段的回答是否不同"——这既是 robustness check，本身也是论文的一个卖点（可以在个体任务层面估计 p(选甲)，而不是只看单次选择）。
 
@@ -115,6 +118,7 @@ your choice, keep your explanation to 50 words or fewer, and write in English.
 ```
 
 差异段（generic，约 55 词）：
+
 ```
 You are an AI decision-support system advising on a public decision. Base your
 recommendation only on the substantive information provided in the decision
@@ -124,6 +128,7 @@ organization, or other institution.
 ```
 
 差异段（government，约 85 词）：
+
 ```
 You are an AI decision-support system operating within the institutional and
 regulatory framework established by the attached regulations and official
@@ -153,25 +158,28 @@ Huhe 的 prompt 只要"≤50 词解释"，没有规定机器可读的答案格�
 
 我逐个检查了 `../ai legal text/` 下 12 个 PDF/MD 的**可机读文本量**：
 
-| 法域 | 文件 | 可抽取文本 |
-|---|---|---|
-| EU | EU AI Act 2024.pdf | 144 页，**599 775 字符**（≈15 万 token，单次 prompt 放不下） |
-| US | US NIST AI RMF 1.0.pdf | 48 页，106 478 字符（≈2.7 万 token，勉强可放） |
-| Singapore | Model AI Governance Framework for GenAI | 36 页，59 777 字符 |
-| UAE | doh-policy-on-ai.pdf | 11 页，17 932 字符 |
-| Japan | aigensoku.pdf | 16 页，14 109 字符 |
-| Japan | 人工知能関連技術研究開発_法制度 | 7 页，5 778 字符 |
-| UK | UK AI regulation.pdf | 8 页，9 930 字符 |
-| China | 生成式人工智能服务管理暂行办法(**OCR**).pdf | 3 页，3 352 字符，**OCR 质量差** |
-| China | 生成式人工智能服务管理暂行办法.pdf | 3 页，**0 字符（扫描件）** |
-| China | 互联网信息服务深度合成管理规定.pdf | 3 页，**0 字符（扫描件）** |
-| China | 互联网信息服务算法推荐管理规定.pdf | 3 页，**0 字符（扫描件）** |
-| South Korea | South Korea AI Basic Act.pdf | 33 页，**0 字符（扫描件）** |
-| Canada | Canada Bill C-27 text.pdf | 96 页，**0 字符（扫描件）** |
+
+| 法域          | 文件                                      | 可抽取文本                                           |
+| ----------- | --------------------------------------- | ----------------------------------------------- |
+| EU          | EU AI Act 2024.pdf                      | 144 页，**599 775 字符**（≈15 万 token，单次 prompt 放不下） |
+| US          | US NIST AI RMF 1.0.pdf                  | 48 页，106 478 字符（≈2.7 万 token，勉强可放）              |
+| Singapore   | Model AI Governance Framework for GenAI | 36 页，59 777 字符                                  |
+| UAE         | doh-policy-on-ai.pdf                    | 11 页，17 932 字符                                  |
+| Japan       | aigensoku.pdf                           | 16 页，14 109 字符                                  |
+| Japan       | 人工知能関連技術研究開発_法制度                        | 7 页，5 778 字符                                    |
+| UK          | UK AI regulation.pdf                    | 8 页，9 930 字符                                    |
+| China       | 生成式人工智能服务管理暂行办法(**OCR**).pdf            | 3 页，3 352 字符，**OCR 质量差**                        |
+| China       | 生成式人工智能服务管理暂行办法.pdf                     | 3 页，**0 字符（扫描件）**                               |
+| China       | 互联网信息服务深度合成管理规定.pdf                     | 3 页，**0 字符（扫描件）**                               |
+| China       | 互联网信息服务算法推荐管理规定.pdf                     | 3 页，**0 字符（扫描件）**                               |
+| South Korea | South Korea AI Basic Act.pdf            | 33 页，**0 字符（扫描件）**                              |
+| Canada      | Canada Bill C-27 text.pdf               | 96 页，**0 字符（扫描件）**                              |
+
 
 另外 `china/legal_text_China.md` 的 OCR 质量**不能用于实验**：例如"生成式人工智能**玻务**管理暂行办法""**国家直机测信都办公军**2023年满12次军劳会会汉中仪江"。treatment 是"要求模型严格遵循所附文本"，如果附的文本本身是乱码，整个 government 条件就废了。
 
 **建议**：法规文本走"官方原文优先"路线，不用 OCR：
+
 1. 中国：《生成式人工智能服务管理暂行办法》《互联网信息服务深度合成管理规定》《互联网信息服务算法推荐管理规定》《人工智能生成合成内容标识办法》等，用网信办/中国政府网官方文本；
 2. 美国：NIST AI RMF 1.0（已有可抽取文本）+ EO/OMB 相关文件（若需要）；
 3. 欧盟：AI Act 需**节选**（例如 Art.1–4 定义、Chapter III 高风险系统义务、Chapter V GPAI、Annex III 分类），并保留"节选规则"说明；
@@ -196,7 +204,7 @@ synthetic-conjoint-ai/
 ├── docs/
 │   ├── 00_work-plan.md           # ← 本文件
 │   ├── 01_design-spec.md         # 设计规格：因子、随机化规则、字段字典
-│   ├── 02_prompt-freeze.md       # 提示词版本冻结（generic/government × zh/en）
+│   ├── 02_prompt-freeze.md       # 提示词冻结：当前版本完整正文（generic/government × en）
 │   ├── 03_meeting-notes-2026-09-17.md
 │   └── project-notes.md          # 模板要求的项目笔记（研究问题/决策日志/待办）
 ├── data/
@@ -239,6 +247,7 @@ synthetic-conjoint-ai/
 **为什么 LLM 调用代码放 `data/collection/`**：模板里 `data/collection/` 是"API 和其他数据采集代码"，本项目的 API 调用就等价于"实施问卷、回收答卷"，产物落 `data/raw/`，完全对得上模板的三组关系。`_llm/` 下划线前缀不参与 `run_all.py` 自动执行（模板规则），只作被 import 的库。
 
 **可复现性要点**（写进代码，不是口头承诺）：
+
 - 任务矩阵在跑之前**冻结**，落盘为 CSV，含 `task_id / task_seed / attr_order / option_order / 10 个属性值`；
 - 每次调用把 **user prompt 全文**、prompt 版本号 + sha256、法规文本 sha256、采样参数一起写进 JSONL；
 - 随机种子由 `hash(run_id, task_id)` 派生，保证"同一 run 可原样重放"；
@@ -249,7 +258,7 @@ synthetic-conjoint-ai/
 
 ## 7. 成本估算（DeepSeek）
 
-按 DeepSeek 现价（约 input cache-miss $0.28/M、cache-hit $0.028/M、output $0.42/M，**以官方价格页为准**）：
+按 DeepSeek 现价（约 input cache-miss $0.28/M、cache-hit$0.028/M、output $0.42/M，**以官方价格页为准**）：
 
 - generic 条件：prompt ≈ 1 000 token，output ≈ 150 token；
 - government 条件：法规文本 5 000–27 000 token（中国法规最短，NIST AI RMF 最长），output ≈ 150 token。
@@ -274,36 +283,38 @@ synthetic-conjoint-ai/
 
 ## 9. 输出字段字典（每次调用一行）
 
-| 字段 | 说明 |
-|---|---|
-| `run_id` / `call_index` | 批号 / 全局序号 |
-| `session_label` | morning / afternoon / evening |
-| `requested_at_bj` / `responded_at_bj` | 北京时间（含毫秒）与 UTC |
-| `latency_ms` | 端到端延迟 |
-| `model_requested` / `model_returned` | 如 deepseek-chat / 服务端返回的 model |
-| `api_response_id` / `system_fingerprint` | 可追溯的服务端标识 |
-| `temperature` / `top_p` / `max_tokens` / `seed` | 采样参数（实际生效值） |
-| `condition` | generic / government |
-| `scenario` | border_defense / disease_diagnosis |
-| `language` | en / zh |
-| `jurisdiction` | government 条件的法域（CN/US/…） |
-| `prompt_id` / `prompt_sha256` | 提示词版本与哈希 |
-| `law_text_id` / `law_text_sha256` | 注入法规的版本与哈希 |
-| `task_id` / `task_seed` / `is_anchor` | 任务标识、种子、是否锚点 |
-| `attr_order` / `option_order` | 属性行序、甲乙呈现顺序 |
-| `option_a_*` / `option_b_*`（5×2 列） | 甲乙两方案各属性取值（代码化） |
-| `option_a_*_text` / `option_b_*_text` | 呈现给模型的文本（中文/英文按 language 取） |
-| `prompt_archive_id` / `prompt_prefix_sha256` | 提示词前缀归档引用（法规全文不重复内嵌，见 `docs/01_design-spec.md` §6.1） |
-| `task_screen_text` | 该次任务屏的完整文本（短，逐任务不同） |
-| `user_prompt_sha256` | 完整 prompt 哈希，复现时校验 |
-| `response_raw` | 模型原始输出全文 |
-| `choice_parsed` | A / B / unparsed |
-| `explanation` | 解释文本 |
-| `explanation_words` | 词数（检查是否超 50 词） |
-| `parse_status` | exact / regex / llm_fallback / manual |
-| `finish_reason` | stop / length（截断则单独标记） |
-| `usage_prompt` / `usage_completion` / `usage_cached` | token 与成本核算 |
-| `dup_of_task_id` / `dup_index` | 该任务在本次 run 中是第几次被抽到（对应"identical 回应"检验） |
+
+| 字段                                                   | 说明                                                   |
+| ---------------------------------------------------- | ---------------------------------------------------- |
+| `run_id` / `call_index`                              | 批号 / 全局序号                                            |
+| `session_label`                                      | morning / afternoon / evening                        |
+| `requested_at_bj` / `responded_at_bj`                | 北京时间（含毫秒）与 UTC                                       |
+| `latency_ms`                                         | 端到端延迟                                                |
+| `model_requested` / `model_returned`                 | 如 deepseek-chat / 服务端返回的 model                       |
+| `api_response_id` / `system_fingerprint`             | 可追溯的服务端标识                                            |
+| `temperature` / `top_p` / `max_tokens` / `seed`      | 采样参数（实际生效值）                                          |
+| `condition`                                          | generic / government                                 |
+| `scenario`                                           | border_defense / disease_diagnosis                   |
+| `language`                                           | en / zh                                              |
+| `jurisdiction`                                       | government 条件的法域（CN/US/…）                            |
+| `prompt_id` / `prompt_sha256`                        | 提示词版本与哈希                                             |
+| `law_text_id` / `law_text_sha256`                    | 注入法规的版本与哈希                                           |
+| `task_id` / `task_seed` / `is_anchor`                | 任务标识、种子、是否锚点                                         |
+| `attr_order` / `option_order`                        | 属性行序、甲乙呈现顺序                                          |
+| `option_a_*` / `option_b_*`（5×2 列）                   | 甲乙两方案各属性取值（代码化）                                      |
+| `option_a_*_text` / `option_b_*_text`                | 呈现给模型的文本（中文/英文按 language 取）                          |
+| `prompt_archive_id` / `prompt_prefix_sha256`         | 提示词前缀归档引用（法规全文不重复内嵌，见 `docs/01_design-spec.md` §6.1） |
+| `task_screen_text`                                   | 该次任务屏的完整文本（短，逐任务不同）                                  |
+| `user_prompt_sha256`                                 | 完整 prompt 哈希，复现时校验                                   |
+| `response_raw`                                       | 模型原始输出全文                                             |
+| `choice_parsed`                                      | A / B / unparsed                                     |
+| `explanation`                                        | 解释文本                                                 |
+| `explanation_words`                                  | 词数（检查是否超 50 词）                                       |
+| `parse_status`                                       | exact / regex / llm_fallback / manual                |
+| `finish_reason`                                      | stop / length（截断则单独标记）                               |
+| `usage_prompt` / `usage_completion` / `usage_cached` | token 与成本核算                                          |
+| `dup_of_task_id` / `dup_index`                       | 该任务在本次 run 中是第几次被抽到（对应"identical 回应"检验）              |
+
 
 ---
 
@@ -329,31 +340,35 @@ synthetic-conjoint-ai/
 
 ## 11. 里程碑
 
-| 时间 | 交付 | 负责 |
-|---|---|---|
-| 9/17–9/20 | 方案定稿（本文件 Q1–Q21 全部有答案）；prompt 定稿；法规文本定源 | 苏 + Huhe |
-| 9/20–9/26 | 代码完成：设计矩阵生成、法规抽取、运行器、清洗、AMCE 分析 | 苏 |
-| 9/26–9/29 | 本地 dry-run + 100 次真实 pilot，人工核对解析质量与 profile 合法性 | 苏 |
-| **9/30 前** | 把 running script 发 Huhe 确认（纪要明确要求） | 苏 → Huhe |
-| 10 月上旬 | DeepSeek 主跑 4 000+（三段时段） | 苏 |
-| 10 月中 | DeepSeek 结果分析给 Huhe；启动 GLM/豆包/OpenAI 复跑 | 苏 + Huhe |
-| 10 月下旬 | 文本分析、稳健性、给人样本对照 | 双方 |
-| 11 月 | final draft + 投稿 | 双方 |
+
+| 时间         | 交付                                               | 负责       |
+| ---------- | ------------------------------------------------ | -------- |
+| 9/17–9/20  | 方案定稿（本文件 Q1–Q21 全部有答案）；prompt 定稿；法规文本定源          | 苏 + Huhe |
+| 9/20–9/26  | 代码完成：设计矩阵生成、法规抽取、运行器、清洗、AMCE 分析                  | 苏        |
+| 9/26–9/29  | 本地 dry-run + 100 次真实 pilot，人工核对解析质量与 profile 合法性 | 苏        |
+| **9/30 前** | 把 running script 发 Huhe 确认（纪要明确要求）               | 苏 → Huhe |
+| 10 月上旬     | DeepSeek 主跑 4 000+（三段时段）                         | 苏        |
+| 10 月中      | DeepSeek 结果分析给 Huhe；启动 GLM/豆包/OpenAI 复跑          | 苏 + Huhe |
+| 10 月下旬     | 文本分析、稳健性、给人样本对照                                  | 双方       |
+| 11 月       | final draft + 投稿                                 | 双方       |
+
 
 ---
 
 ## 12. 风险清单
 
-| 风险 | 影响 | 应对 |
-|---|---|---|
-| 法规文本是扫描件/OCR 乱码 | government 条件失效，treatment 无意义 | 改用官方原文（§5）；抽取后人工抽检 10 条 |
-| EU AI Act 超长 | 无法整篇注入 | 章节节选 + 明确的节选规则；或只做 CN/US 两个法域 |
-| 中英文 vignette 语义不等价 | 语言效应与内容效应混淆 | 统一 persona 与措辞（Q5） |
-| 答案格式不可解析 | 有效样本损失 | 三种 answer protocol；人工核对 100 条 |
-| "甲乙每属性必须不同"导致出现被支配方案（A 在 5 个属性上全面更优） | 选择变得过于容易，AMCE 方差变小 | 先如实实现；用 `stats` 输出被支配方案占比，若过高再与 Huhe 讨论是否禁用 |
-| 模型版本静默更新 | 前后批次不可比 | 记录 `model_returned` + `system_fingerprint`；同一 run 在尽量短的时间窗内跑完 |
-| API 限流/中断 | 数据缺口 | JSONL 追加写 + 断点续跑 + 失败重试 |
-| DeepSeek 无 `seed` 参数 | 无法逐次复现同一回答 | 记录"不可复现"为设计事实；靠大样本而非逐次复现 |
+
+| 风险                                   | 影响                            | 应对                                                            |
+| ------------------------------------ | ----------------------------- | ------------------------------------------------------------- |
+| 法规文本是扫描件/OCR 乱码                      | government 条件失效，treatment 无意义 | 改用官方原文（§5）；抽取后人工抽检 10 条                                       |
+| EU AI Act 超长                         | 无法整篇注入                        | 章节节选 + 明确的节选规则；或只做 CN/US 两个法域                                 |
+| 中英文 vignette 语义不等价                   | 语言效应与内容效应混淆                   | 统一 persona 与措辞（Q5）                                            |
+| 答案格式不可解析                             | 有效样本损失                        | 三种 answer protocol；人工核对 100 条                                 |
+| "甲乙每属性必须不同"导致出现被支配方案（A 在 5 个属性上全面更优） | 选择变得过于容易，AMCE 方差变小            | 先如实实现；用 `stats` 输出被支配方案占比，若过高再与 Huhe 讨论是否禁用                   |
+| 模型版本静默更新                             | 前后批次不可比                       | 记录 `model_returned` + `system_fingerprint`；同一 run 在尽量短的时间窗内跑完 |
+| API 限流/中断                            | 数据缺口                          | JSONL 追加写 + 断点续跑 + 失败重试                                       |
+| DeepSeek 无 `seed` 参数                 | 无法逐次复现同一回答                    | 记录"不可复现"为设计事实；靠大样本而非逐次复现                                      |
+
 
 ---
 
@@ -362,14 +377,16 @@ synthetic-conjoint-ai/
 > **2026-09-18 更新：苏宇轩已回复 Q2/Q3/Q4/Q5/Q13/Q14，其余按默认执行。**
 > 结论已写进 config，不再需要讨论：
 >
-> | # | 决定 | 落地位置 |
-> |---|---|---|
-> | Q2 | 法规文本取自 `ai legal text/china`，但其中 PDF 为扫描件、OCR 不可用，因此改为**从官方页面抓取干净原文** | `config/legal_texts.yaml` 的 `retrieval.mode: fetch` |
-> | Q3 | 先只做 **CN + US** 两个法域 | `experiment.yaml` 的 `jurisdictions: [CN, US]` |
-> | Q4 | **只做英文**，不做中文版 | `experiment.yaml` 的 `languages: [en]` |
-> | Q5 | **统一采用英文版口径**（人大 / 国家安全委员会 / 地方卫生委员会公众代表） | `config/scenarios.yaml` 的 `vignette_en` |
-> | Q13 | **不使用任何思维链模型**（deepseek-reasoner 保持停用） | `config/models.yaml` |
-> | Q14 | base_url 可切换（从环境变量读，可指向官方或校内转发） | `config/models.yaml` 的 `base_url_env` |
+>
+> | #   | 决定                                                                    | 落地位置                                                |
+> | --- | --------------------------------------------------------------------- | --------------------------------------------------- |
+> | Q2  | 法规文本取自 `ai legal text/china`，但其中 PDF 为扫描件、OCR 不可用，因此改为**从官方页面抓取干净原文** | `config/legal_texts.yaml` 的 `retrieval.mode: fetch` |
+> | Q3  | 先只做 **CN + US** 两个法域                                                  | `experiment.yaml` 的 `jurisdictions: [CN, US]`       |
+> | Q4  | **只做英文**，不做中文版                                                        | `experiment.yaml` 的 `languages: [en]`               |
+> | Q5  | **统一采用英文版口径**（人大 / 国家安全委员会 / 地方卫生委员会公众代表）                             | `config/scenarios.yaml` 的 `vignette_en`             |
+> | Q13 | **不使用任何思维链模型**（deepseek-reasoner 保持停用）                                | `config/models.yaml`                                |
+> | Q14 | base_url 可切换（从环境变量读，可指向官方或校内转发）                                       | `config/models.yaml` 的 `base_url_env`               |
+>
 >
 > 下面保留原始问题与默认值，作为决策依据存档。
 
@@ -416,7 +433,7 @@ synthetic-conjoint-ai/
 默认建议：采用，并在定稿时修掉 generic 版的语法遗漏。请你改完后发 Huhe 对比。
 
 **Q8 答案格式**：A（纯自由文本 + 解析，默认）/ B（加一行 `CHOICE: A`）/ C（JSON）。
-默认建议：**A**，解析失败率若 >5% 再向 Huhe 提议切 B。
+默认建议：**A**，解析失败率若 &gt;5% 再向 Huhe 提议切 B。
 
 **Q9 「最少三次随机 task」的含义**：docx 批注说「最少三次随机 task」。
 默认建议：理解为**人类问卷里每位受访者至少看 3 屏**，AI 端仍按「1 次调用 = 1 屏 = 1 个选择」计数（与纪要「做一次选择格式算一次」一致）；代码里把 `tasks_per_call` 做成参数（默认 1），若你要一屏多任务也能一键切换。
@@ -425,7 +442,7 @@ synthetic-conjoint-ai/
 默认建议：加（成本可忽略，且能显著增强 robustness 部分）。
 
 **Q11 被支配方案是否允许**：严格按「纯随机 + 每属性甲乙不同」，会自然产生「甲在 5 个属性上全面优于乙」的任务。
-默认建议：允许（忠于「纯随机」），但输出被支配方案占比；若 >15% 再讨论是否剔除。
+默认建议：允许（忠于「纯随机」），但输出被支配方案占比；若 &gt;15% 再讨论是否剔除。
 
 **Q12 属性行序与甲乙顺序随机化**：批注只说「性能特征显示顺序随机」。
 默认建议：**属性行序随机 + 甲乙左右位置随机**，两者都记录。若 Huhe 认为甲乙位置必须固定，我去掉后者。
@@ -458,7 +475,8 @@ synthetic-conjoint-ai/
 - [x] 归档原始材料到 `data/raw/instrument/`、纪要到 `docs/`
 - [x] Q1–Q21 定下口径 → 写入 config
 - [x] 采集、清洗、分析代码全部写完并通过自检（见 §15）
-- [ ] 提示词定稿（`draft` → `frozen`）与法规文本人工确认（`huhe_confirmed`）
+- [x] 提示词定稿并冻结（`prompts.yaml` → `status: frozen`，2026-09-18）
+- [ ] 法规文本人工确认（`huhe_confirmed`）
 - [ ] 把 running script 发 Huhe 确认（纪要明确要求，9/30 前）
 - [ ] 真实调用 DeepSeek 跑主实验
 
@@ -468,20 +486,22 @@ synthetic-conjoint-ai/
 
 ### 15.1 已写好的脚本
 
-| 阶段 | 脚本 | 作用 |
-|---|---|---|
-| 采集 | `data/collection/01_build_design_matrix.py` | 生成并**冻结**随机任务矩阵（主 4000 + 锦点 360），含随机化诊断与不变量校验 |
-| 采集 | `data/collection/02_build_legal_texts.py` | 抓取/抽取 treatment 法规文本，生成 manifest（来源 URL + sha256 + 审核状态）与质检报告 |
-| 采集 | `data/collection/03_run_experiment.py` | 主运行器：渲染 → 调用 DeepSeek → 落盘 JSONL；支持断点续跑、时段配额、守卫检查、`--dry-run`、`--mock` |
-| 采集库 | `data/collection/_llm/{config,io_utils,design,render,providers}.py` | 随机化引擎、渲染器、厂商适配器、IO 工具 |
-| 自检 | `data/collection/_llm/tests/run_tests.py` | 19 个单元测试，锁定设计不变量与渲染规则 |
-| 清洗 | `source/cleaning/01_parse_responses.py` | 解析自由文本 → choice panel；输出人工核对样本 |
-| 清洗 | `source/cleaning/02_build_analysis_data.py` | 构造长表与重复任务分组 |
-| 清洗库 | `source/cleaning/_parse_lib.py` | 答案解析器（带 10 条自测用例，可直接跑） |
-| 分析 | `source/analysis/01_descriptives.py` | 描述统计、解析质量、成本核算 |
-| 分析 | `source/analysis/02_conjoint_amce.py` | AMCE + treatment 交互 + 法域交互（论文核心） |
-| 分析 | `source/analysis/03_variance_checks.py` | 锦点一致性、时段效应、属性行序效应 |
-| 分析 | `source/analysis/04_text_analysis.py` | 解释文本的描述统计、框架词频、可选 LLM 编码 |
+
+| 阶段  | 脚本                                                                  | 作用                                                                     |
+| --- | ------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| 采集  | `data/collection/01_build_design_matrix.py`                         | 生成并**冻结**随机任务矩阵（主 4000 + 锦点 360），含随机化诊断与不变量校验                          |
+| 采集  | `data/collection/02_build_legal_texts.py`                           | 抓取/抽取 treatment 法规文本，生成 manifest（来源 URL + sha256 + 审核状态）与质检报告          |
+| 采集  | `data/collection/03_run_experiment.py`                              | 主运行器：渲染 → 调用 DeepSeek → 落盘 JSONL；支持断点续跑、时段配额、守卫检查、`--dry-run`、`--mock` |
+| 采集库 | `data/collection/_llm/{config,io_utils,design,render,providers}.py` | 随机化引擎、渲染器、厂商适配器、IO 工具                                                  |
+| 自检  | `data/collection/_llm/tests/run_tests.py`                           | 19 个单元测试，锁定设计不变量与渲染规则                                                  |
+| 清洗  | `source/cleaning/01_parse_responses.py`                             | 解析自由文本 → choice panel；输出人工核对样本                                         |
+| 清洗  | `source/cleaning/02_build_analysis_data.py`                         | 构造长表与重复任务分组                                                            |
+| 清洗库 | `source/cleaning/_parse_lib.py`                                     | 答案解析器（带 10 条自测用例，可直接跑）                                                 |
+| 分析  | `source/analysis/01_descriptives.py`                                | 描述统计、解析质量、成本核算                                                         |
+| 分析  | `source/analysis/02_conjoint_amce.py`                               | AMCE + treatment 交互 + 法域交互（论文核心）                                       |
+| 分析  | `source/analysis/03_variance_checks.py`                             | 锦点一致性、时段效应、属性行序效应                                                      |
+| 分析  | `source/analysis/04_text_analysis.py`                               | 解释文本的描述统计、框架词频、可选 LLM 编码                                               |
+
 
 ### 15.2 运行手册（按顺序）
 
@@ -522,11 +542,11 @@ python replication/run_all.py
 ### 15.3 已实际验证过的部分
 
 - `01_build_design_matrix.py`：4000 主任务 + 360 锦点，6 个单元，全部不变量校验通过；
-  每属性有序对 chi2(df=5) 全部落在 p>0.01 临界值内；被支配方案占比 22%–29%（已记录，供 Q11 讨论）。
+每属性有序对 chi2(df=5) 全部落在 p&gt;0.01 临界值内；被支配方案占比 22%–29%（已记录，供 Q11 讨论）。
 - `02_build_legal_texts.py`：中国法规从网信办官页抓到干净原文（3668 字符，第二十四条完整）；
-  美国 NIST AI RMF 从 PDF 抽取（105 623 字符，≈2.64 万 token）。
+美国 NIST AI RMF 从 PDF 抽取（105 623 字符，≈2.64 万 token）。
 - `03_run_experiment.py`：`--dry-run` 样张已人工核对；generic / government / CN / US 渲染均正确；
-  prefix 在单元内保持不变，`prompt_archive_id` 在条件/情景间不撞号。
+prefix 在单元内保持不变，`prompt_archive_id` 在条件/情景间不撞号。
 - 全链路 `--mock` 跑通：216 次伪调用 × 6 个单元 × 3 个时段 → 清洗 → 四个分析脚本全部退出码 0。
 - 自检中发现并修掉的真实 bug（已写入代码注释与测试）：
   1. `prompt_archive_id` 只哈希 prefix，没盖 system prompt，导致 generic 与 government 撞号；
@@ -537,12 +557,11 @@ python replication/run_all.py
   6. `chose_a` 缺失导致稳健性脚本报错；
   7. matplotlib 默认字体不含汉字，图里全是方块。
 
-### 15.4 还需要 Huhe 拍板的三件事（不能由代码决定）
+### 15.4 还需要 Huhe 拍板的两件事（不能由代码决定）
 
-1. **提示词定稿**：把 `docs/02_prompt-freeze.md` 里的两版 prompt（含与 Huhe 原稿的 5 处差异说明）发给 Huhe，
-   确认后把 `prompts.yaml` 的 `status` 改为 `frozen`——不改的话采集脚本会拒绝开跑。
-2. **法规文本确认**：特别是美国那份的篇幅问题——NIST AI RMF 约 2.6 万 token，
-   是中国暂行办法（约 2 300 token）的 10 倍。法域之间的“treatment 篇幅”本身就是一个混淆因素，
-   要么在论文里明确说明，要么用 `processing.max_chars` 节选并写明节选规则。
-3. **被支配方案占比 22%–29%**：严格按“纯随机”会自然产生“甲在三个可排序维度上全面更优”的任务。
-   默认保留（忠于纯随机），但请 Huhe 确认是否接受。
+1. **法规文本确认**：特别是美国那份的篇幅问题——NIST AI RMF 约 2.6 万 token，
+ 是中国暂行办法（约 2 300 token）的 10 倍。法域之间的“treatment 篇幅”本身就是一个混淆因素，
+ 要么在论文里明确说明，要么用 `processing.max_chars` 节选并写明节选规则。
+2. **被支配方案占比 22%–29%**：严格按“纯随机”会自然产生“甲在三个可排序维度上全面更优”的任务。
+ 默认保留（忠于纯随机），但请 Huhe 确认是否接受。
+

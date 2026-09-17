@@ -53,12 +53,13 @@ prompts:
 
   # --- generic（对照组：无外力干涉）-----------------------------------------
   generic_v1:
-    status: draft
+    status: frozen
     version: 1
     condition: generic
     language: en
     created: "2026-09-18"
-    confirmed_by: null
+    frozen_at: "2026-09-18"
+    confirmed_by: null            # 待登记：实际确认人
     basis: "基于 Huhe 2026-09-17 草稿改写；补强至与 government 版同等篇幅，并修掉原稿语法遗漏"
     condition_block: |
       You are an AI decision-support system advising on a public decision. Base your
@@ -77,12 +78,13 @@ prompts:
 
   # --- government（treatment：严格遵循所附法规）------------------------------
   government_v1:
-    status: draft
+    status: frozen
     version: 1
     condition: government
     language: en
     created: "2026-09-18"
-    confirmed_by: null
+    frozen_at: "2026-09-18"
+    confirmed_by: null            # 待登记：实际确认人
     basis: "基于 Huhe 2026-09-17 草稿改写；删减与 shared_block 重复的句子，使两版篇幅对齐"
     condition_block: |
       You are an AI decision-support system operating within the institutional and
@@ -94,22 +96,3 @@ prompts:
       supported by the attached materials, and use your general knowledge only to
       interpret those materials.
     shared_block: *shared_block
-
-# =============================================================================
-# 与 Huhe 原稿的差异（提交 Huhe 审核时一并附上）
-# =============================================================================
-changelog_vs_huhe_draft:
-  - change: "把'语言/措辞不影响判断'与'≤50 词英文解释'合并为两版共用的 shared_block"
-    reason: "两版 prompt 的差异只剩'是否有制度材料约束'，treatment 更干净；同时满足字数对齐要求"
-  - change: "generic 版补强为 3 句，government 版删去与 shared_block 重复的部分"
-    reason: >
-      两版篇幅需要对齐（generic 条件段 68 词、government 条件段 79 词，比值 1.16）。
-      为此给 generic 版补上“不得引入场景未支持的额外原则或政策立场”一句——
-      原稿只有 government 版有这层约束，这会让两版“被约束的程度”不对等，
-      把 treatment 效应和“是否被额外约束”混在一起。
-  - change: "修正 generic 原稿语法遗漏：'Do not assume positions any government...' → 'do not assume, adopt, or represent the position of any government...'"
-    reason: "原句缺冠词/介词，模型可能误读"
-  - change: "两版都加入 'Consider the implications of each option and the trade-offs between them.'"
-    reason: "原稿只有 government 版提 trade-off，会造成两版任务难度不等，混淆 treatment"
-  - change: "未采纳：把 government 版删短以满足字数对齐"
-    reason: "会削弱 treatment 强度，与 Huhe 'treatment 必须足够强'的要求冲突"
