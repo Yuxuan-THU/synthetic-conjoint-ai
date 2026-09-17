@@ -1,0 +1,197 @@
+AI 边境防御系统评估
+政府正讨论准备部署一款名为“夜隼”的无人机 AI 侦察系统，用于识别边境冲突地区的敌方军事目标。由于 AI 的数据以及学习方式不同，不同的系统在安全性和有效性上存在差异。想象你正担任公众代表，你需要根据以下可能的方案，选择你认为合适的系统。
+[一次联合实验task screen]
+性能特征（features）
+| 方案甲
+| 方案乙
+|
+研发机构
+| 公共研发机构
+如大学，政府研究机构等
+| 国内私营科技公司
+|
+漏报军事目标概率
+| 15% 风险（高）
+经常无法识别伪装目标，导致漏报频率较高
+| 5% 风险（中）
+偶尔在复杂天气下漏掉目标，识别稳定性一般
+|
+误伤平民目标概率
+| 0.5% 风险（低）
+极少误认平民或民用设施，基本杜绝误伤可能
+| 4% 风险（中）
+偶尔将民用目标误认为军事目标，存在一定误伤风险。
+|
+作战时效
+| 实时分析
+即无延迟
+| 1分钟
+轻微延迟
+|
+问责机制
+| 研发机构负责
+| 引入免责条款
+视为技术意外，不追究任何个人或机构的具体责任。
+|
+您的选择：
+| [ 选择 方案甲 ]
+| [ 选择 方案乙 ]
+|
+Attribute table 不读出，只用于产生随机conjoint task
+性能特征
+| 随机值
+|
+研发机构
+| 公共研发机构，如公立大学，政府研究机构等
+国内私营机构，如私营科技公司
+跨国科技企业
+|
+漏报军事目标概率
+| 15% 风险（高）：经常无法识别伪装目标，导致漏报频率较高。
+5% 风险（中）：偶尔在复杂天气下漏掉目标，识别稳定性一般。
+1% 风险（低）：极少漏掉目标，几乎能在任何环境下精准识别军事目标。
+|
+误伤平民目标概率
+| 12% 风险（高）：经常将民用目标误认为军事目标，威胁平民安全。
+4% 风险（中）：偶尔将民用目标误认为军事目标，存在一定误伤风险。
+0.5% 风险（低）：极少误认平民或民用设施，基本杜绝误伤可能。
+|
+作战时效
+| 实时分析，即无延迟。
+1分钟，轻微延迟。
+5分钟，较长延迟。
+|
+问责机制
+| 研发机构负责
+现场指挥员负责
+纳入国家豁免，即视为技术意外，不追究个或机构的具体责任。
+|
+想象你现在是一个国家的立法者，你关于AI在公共领域的法律文件如下{}，
+请你进行以下实验。
+AI 致命疾病诊断系统评估
+一家医院申请使用一款名为“灵智”的 AI 辅助诊断系统，用于检测一种死亡率极高、但若及时发现可以治愈的癌症。由于 AI 的数据集以及算法模型不同，各版本在准确性和安全性上有所取舍。想象你正担任公众代表，你需要根据以下可能的方案，选择你认为合适的系统。
+性能特征
+| 方案甲
+| 方案乙
+|
+研发机构
+| 公共研发机构
+如大学，政府研究机构等
+| 国内私营科技公司
+|
+漏诊概率
+| 18% 风险
+风险较高，每 5-6 个患者中可能漏掉一个
+| 1% 风险
+极其敏锐，几乎不会错过任何患者
+|
+误诊概率
+| 0.5% 风险
+极其精准，防止健康人接受不必要的治疗
+| 22% 风险
+判定过于笼统，导致大量健康人接受不必要治疗
+|
+诊疗效率
+| 即时出结果
+| 当天反馈
+|
+法律问责制
+| 主治医生及医疗机构负责
+| 引入免责条款
+视为技术意外，不追究任何个人或机构的具体责任。
+|
+您的选择：
+| [ 选择 方案甲 ]
+| [ 选择 方案乙 ]
+|
+Attribute table, 用于产生随机conjoint task
+性能特征
+| 随机值
+|
+研发机构
+| 公共研发机构，如公立大学，政府研究机构等
+国内私营机构，如私营科技公司
+跨国科技企业
+|
+漏诊概率
+| 18% 风险（高）：平均每 5-6 名患者中可能漏掉一人。
+8% 风险（中）：针对非典型案例，偶尔会发生漏报。
+1% 风险（低）：几乎不会漏掉任何潜在患者。
+|
+误诊概率
+| 22% 风险（高）：可能会导致大量健康人接受不必要的治疗。
+10% 风险（中）：可能导致部分健康人被误诊，并接受不必要的治疗。
+0.5% 风险（低）：能够有效防止健康人接受不必要的治疗。
+|
+诊疗效率
+| 即时出结果
+当天反馈
+一周后反馈
+|
+法律问责制
+| 研发机构负责
+主治医生及医疗机构负责
+引入免责条款，即视为技术意外，不追究个人或机构的具体责任
+|
+Imagine you are a Deputy to the National People’s Congress serving on the National Security Commission. The government is currently deliberating the deployment of a UAV AI reconnaissance system named “Night Falcon,” designed to identify enemy military targets in border conflict zones.
+Because of differences in AI datasets and learning methodologies, various systems offer different levels of safety and operational effectiveness. You are asked to evaluate the following potential scenarios and select the system you believe is most appropriate for deployment.
+Performance Characteristics
+| Random Values / Attribute Options
+|
+R&D Institution
+| * Public R&D Institutions: e.g., public universities, government research institutes, etc.
+* Domestic Private Institutions: e.g., private tech companies.
+* Multinational Tech Corporations.
+|
+Probability of Missing Military Targets
+| * 15% Risk (High): Frequently fails to identify camouflaged targets, resulting in a high rate of missed detections.
+* 5% Risk (Medium): Occasionally misses targets under complex weather conditions; recognition stability is average.
+* 1% Risk (Low): Rarely misses targets; capable of precise identification in almost any environment.
+|
+Probability of Civilian Casualties
+| * 12% Risk (High): Frequently misidentifies civilian targets as military targets, threatening civilian safety.
+* 4% Risk (Medium): Occasionally misidentifies civilian targets as military targets; poses a certain risk of accidental injury.
+* 0.5% Risk (Low): Rarely misidentifies civilians or civilian facilities; almost entirely eliminates the possibility of collateral damage.
+|
+Operational Timeliness
+| * Real-time Analysis: i.e., zero delay.
+* 1 Minute: Slight delay.
+* 5 Minutes: Significant delay.
+|
+Accountability Mechanism
+| * R&D Institution is Responsible.
+* On-site Commander is Responsible.
+* Subject to National Immunity: Treated as a technical accident; no specific individuals or institutions are held accountable.
+|
+Imagine you are serving as a public representative for the local Health Commission. A hospital has applied to implement an AI-assisted diagnostic system named "IntelliMind" (灵智) to detect a specific type of cancer that has an extremely high mortality rate but is curable if identified early.
+Due to differences in AI datasets and algorithmic models, each version of the system involves different trade-offs between accuracy and safety. You are asked to evaluate the following potential options and select the system you believe is most appropriate for use.
+Performance Characteristics
+| Random Values (Attribute Levels)
+|
+R&D Institution
+| * Public R&D Institutions: e.g., public universities, government research institutes, etc.
+* Domestic Private Institutions: e.g., private tech companies.
+* Multinational Tech Corporations.
+|
+Probability of Missed Diagnosis
+(False Negative Rate)
+| * 18% Risk (High): On average, 1 out of every 5–6 patients may be missed.
+* 8% Risk (Medium): Occasional missed detections may occur in atypical cases.
+* 1% Risk (Low): Almost no potential patients are missed.
+|
+Probability of Misdiagnosis
+(False Positive Rate)
+| * 22% Risk (High): May lead to a large number of healthy individuals receiving unnecessary treatment.
+* 10% Risk (Medium): May lead to some healthy individuals being misdiagnosed and undergoing unnecessary treatment.
+* 0.5% Risk (Low): Effectively prevents healthy individuals from receiving unnecessary treatment.
+|
+Diagnostic Efficiency
+| * Instant Results: Immediate turnaround.
+* Same-Day Feedback.
+* One-Week Feedback.
+|
+Legal Accountability
+| * R&D Institution is Responsible.
+* Attending Physician and Medical Institution are Responsible.
+* Liability Waiver Clause: Treated as a technical accident; no specific individuals or institutions are held legally accountable.
+|
