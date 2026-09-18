@@ -245,17 +245,16 @@ class TestRendering(unittest.TestCase):
         self.assertIn("TEST_LAW", rendered.prefix_text)
         self.assertIn("第一条 测试文本。", rendered.prefix_text)
 
-    def test_prompt_blocks_are_length_aligned(self) -> None:
-        generic = self.prompts["prompts"]["generic_v1"]
-        government = self.prompts["prompts"]["government_v1"]
-        generic_words = len(render_lib.normalize_ws(str(generic["condition_block"])).split())
-        government_words = len(
-            render_lib.normalize_ws(str(government["condition_block"])).split()
+    def test_shared_block_is_identical_across_conditions(self) -> None:
+        """两版 prompt 的唯一差异是 condition_block：shared_block 必须逐字相同。"""
+        _, generic = render_lib.select_prompt(self.prompts, "generic", "en")
+        _, government = render_lib.select_prompt(self.prompts, "government", "en")
+        self.assertEqual(
+            render_lib.normalize_ws(str(generic["shared_block"])),
+            render_lib.normalize_ws(str(government["shared_block"])),
         )
-        # 两版条件段长度接近（差异 < 30%），确保 treatment 不被篇幅差异混淆
-        ratio = government_words / generic_words
-        self.assertLess(ratio, 1.3)
-        self.assertGreater(ratio, 0.7)
+        self.assertTrue(render_lib.normalize_ws(str(generic["condition_block"])))
+        self.assertTrue(render_lib.normalize_ws(str(government["condition_block"])))
 
     def test_table_rows_follow_attribute_order(self) -> None:
         scenario = self.scenarios["border_defense"]

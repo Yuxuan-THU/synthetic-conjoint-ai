@@ -9,7 +9,7 @@
 - **样本**：每个（条件 × 情景）约 1 000 次选择，分早/中/晚三个时段执行。
 - **负责人**：苏宇轩（代码、prompt、国内模型）；Huhe 老师（国外闭源模型、prompt draft、conjoint 分析 code、论文起草）；孟老师（研究统筹）。
 - **当前阶段**：代码已全部写完并通过自检（19 个单元测试 + 全链路 `--mock` 验证）；
-  待提示词定稿与法规文本人工确认后即可真实开跑。下一步与待确认事项见 `docs/00_work-plan.md` §15。
+  提示词已冻结、treatment 法规文本已由 Huhe 确认，可开始真实调用。下一步与待确认事项见 `docs/00_work-plan.md` §15。
 
 ## 文件地图（每个文件是做什么的）
 
@@ -58,13 +58,13 @@ source/analysis/01–04  ──►  outputs/{tables,figures}/      ← 论文用
 | 文件 | 作用 |
 |---|---|
 | `01_build_design_matrix.py` | 生成并**冻结**随机任务矩阵（主任务 + 锚点）→ `data/raw/design/`；含不变量校验与随机化诊断 |
-| `02_build_legal_texts.py` | 构建 treatment 法规文本（`manual/` 校订稿 > 官方页面 `fetch` > 本地 `pdf`）→ txt + `manifest.csv` + `quality_report.csv` |
+| `02_build_legal_texts.py` | 重建 treatment 法规文本（官方页面 `fetch` / 本地 `pdf`，含页面剪裁与锚点校验）→ `data/raw/legal_texts/{law_text_id}.txt`；已存在则跳过 |
 | `03_run_experiment.py` | **主运行器**：渲染 → 调用 API → 追加写 JSONL；支持 `--dry-run`/`--mock`/断点续跑/时段配额/守卫检查。唯一会真实花钱的脚本，被 `replication/run_all.py` 显式排除 |
 | `config/experiment.yaml` | 样本量（每格 1000）、时段与配额、锚点设置、答案协议、守卫开关、run_id 命名约定 |
 | `config/models.yaml` | 模型注册表（`enabled` 开关）、采样参数、价格表；DeepSeek 已启用，GLM/豆包/OpenAI/Anthropic 预置停用 |
 | `config/scenarios.yaml` | 两情景的 vignette 与 5 属性 × 3 水平展示文本、`dominance_rank`（支配诊断用） |
-| `config/prompts.yaml` | generic/government 两版 system prompt、任务屏与法规块模板、三种答案指令、版本状态（当前 `frozen`，2026-09-18） |
-| `config/legal_texts.yaml` | 法规清单、取文方式、质检锚点（`must_contain`）、人工审核状态 |
+| `config/prompts.yaml` | generic/government 两版 system prompt、任务屏与法规块模板、三种答案指令、版本状态（当前 `generic_v2` / `government_v2`，`frozen`） |
+| `config/legal_texts.yaml` | 法规登记：来源（URL / PDF 路径）、标题与年份、取文方式、质检锚点（`must_contain`）、页面剪裁标记 |
 | `_llm/config.py` | 配置/路径/环境变量加载与 `config_sha256`（配置变了 = 新设计） |
 | `_llm/design.py` | 随机化引擎：有序不放回抽样、三个任务指纹、单元 × 时段配额、锚点计划 |
 | `_llm/render.py` | system prompt 与任务屏渲染、prefix 归档 id（哈希同时覆盖 system prompt） |
@@ -78,10 +78,7 @@ source/analysis/01–04  ──►  outputs/{tables,figures}/      ← 论文用
 | 路径 | 提交？ | 作用 |
 |---|---|---|
 | `instrument/` | 提交 | 人类问卷原件：`AI 联合分析实验.docx`、抽取文本、Word 批注 |
-| `legal_texts/{law_text_id}.txt` | 提交 | treatment 法规纯文本（CN 暂行办法、US NIST AI RMF） |
-| `legal_texts/manifest.csv` | 提交 | 版本登记：来源 URL、sha256、字符数/token 估算、`review_status` |
-| `legal_texts/quality_report.csv` | 提交 | 自动质检结果（锚点字符串是否命中、条文数） |
-| `legal_texts/manual/` | 提交 | 人工校订稿目录，同名 `{id}.txt` 存在时优先使用 |
+| `legal_texts/{law_text_id}.txt` | 提交 | 两份 treatment 纯文本，命名 `{法域}_{简称}_{年份}.txt`（CN 暂行办法、US NIST AI RMF）；来源登记在 `config/legal_texts.yaml` |
 | `design/{run_id}__tasks__{scenario}.csv` | 提交 | **冻结的随机题目**（只是题面，不含任何模型回答）；每情景一份 |
 | `design/{run_id}__session_plan.csv` | 提交 | 单元 × 时段的任务索引区间与配额 |
 | `design/{run_id}__design_manifest.json` | 提交 | 种子、配置指纹、随机化诊断 |
@@ -156,7 +153,7 @@ python source/cleaning/_parse_lib.py
 # 2) 冻结随机任务矩阵（主任务 4000 + 锦点 360）
 python data/collection/01_build_design_matrix.py --run-id <run_id>
 
-# 3) 准备 treatment 法规文本（抓官方原文 + 质检）
+# 3) 法规文本已随仓库提交（两份 txt）；仅更换文本时才重建（已存在则跳过）
 python data/collection/02_build_legal_texts.py
 
 # 4) 先看会发出去什么（不调 API）

@@ -23,7 +23,6 @@ RAW_DIR = DATA_DIR / "raw"
 RESPONSES_DIR = RAW_DIR / "responses"
 DESIGN_DIR = RAW_DIR / "design"
 LEGAL_TEXT_DIR = RAW_DIR / "legal_texts"
-LEGAL_TEXT_MANUAL_DIR = LEGAL_TEXT_DIR / "manual"
 OUTPUTS_DIR = PROJECT_ROOT / "outputs"
 OUTPUTS_DATA = OUTPUTS_DIR / "data"
 OUTPUTS_TABLES = OUTPUTS_DIR / "tables"
@@ -123,7 +122,6 @@ def ensure_output_dirs() -> None:
         RESPONSES_DIR,
         DESIGN_DIR,
         LEGAL_TEXT_DIR,
-        LEGAL_TEXT_MANUAL_DIR,
         OUTPUTS_DATA,
         OUTPUTS_TABLES,
         OUTPUTS_FIGURES,

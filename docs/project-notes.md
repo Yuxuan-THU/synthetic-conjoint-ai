@@ -20,7 +20,7 @@
 - **样本量**：每个（模型 × 条件 × 情景）约 1 000 次，分 morning/afternoon/evening 三个时段。
 - **对照数据**：人类 survey experiment，n ≈ 3 000+（待获取变量表）。
 - **原始材料**：`data/raw/instrument/`（联合实验问卷 docx 及其抽取文本、批注）。
-- **treatment 材料**：`data/raw/legal_texts/`（各法域 AI 法规纯文本 + `manifest.csv`）。
+- **treatment 材料**：`data/raw/legal_texts/`（CN/US 两份 AI 法规纯文本；来源登记在 `config/legal_texts.yaml`）。
 
 ## 变量操作化
 
@@ -62,6 +62,10 @@
 - **2026-09-17**：确认输出中必须记录模型执行任务的时间变量（用于时段 precaution）。
 - **2026-09-17**（自 docx 批注）：每属性上甲、乙两方案的取值必须不同；属性行序随机；最少三次随机 task。
 - **2026-09-17**：项目骨架按 research-project-template 建立；LLM 调用代码归入 `data/collection/`。
+- **2026-09-18**：Huhe 确认两份 treatment 法规文本（CN 暂行办法、US NIST AI RMF）；本轮采用全文口径（不节选），法域篇幅差异（≈2 300 vs ≈26 400 token）在论文中说明。同日移除采集脚本的法规确认门禁，提示词 `frozen` 守卫保留。
+- **2026-09-18**：提示词按讨论定稿为 v2（`generic_v2` / `government_v2`）；v1 停用（未用于任何数据采集）。
+- **2026-09-18**：精简法规材料：`legal_texts/` 只保留两份 txt（统一命名 `{法域}_{简称}_{年份}.txt`），移除 manifest / 质检报告 / 人工校订目录；02 脚本简化为仅构建 txt，03 运行时现算 sha256。
+- **2026-09-18**：v2 复核后确认保留三项有意设计：generic 版 `Do not assume positions any government…` 按原文保留不改；两版条件段不再做长度对齐（39 vs 141 词）；trade-off 提示仅出现在 government 版（两版不对称可接受）。
 
 ## 会议与讨论记录
 
@@ -71,11 +75,11 @@
 ## 待办事项
 
 - [x] 苏宇轩：确认 `docs/00_work-plan.md` 的 Q1–Q21（2026-09-18 确认 Q2/Q3/Q4/Q5/Q13/Q14，其余按默认）。
-- [x] 苏宇轩：改写并对齐两段 prompt（generic 68 词 / government 79 词；完整正文见 `docs/02_prompt-freeze.md`）。
+- [x] 苏宇轩：提示词定稿（v2，2026-09-18 讨论定稿；完整正文见 `docs/02_prompt-freeze.md`）。
 - [x] 苏宇轩：编写实验代码（采集 / 清洗 / 分析 + 19 个单元测试 + 解析器自测 + 全链路 mock 验证）。
 - [x] 苏宇轩：整理干净的官方法规文本（中国三部法规 PDF 为扫描件，已改为从网信办官方页面抓取）。
 - [x] 苏宇轩：提示词定稿并冻结（`prompts.yaml` → `status: frozen`，2026-09-18）；完整正文见 `docs/02_prompt-freeze.md`。
-- [ ] 苏宇轩/Huhe：人工确认法规文本（`--set-review-status ...=huhe_confirmed`）。
+- [x] 苏宇轩/Huhe：人工确认法规文本（`huhe_confirmed`，2026-09-18）；采集端门禁已移除。
 - [ ] 苏宇轩：确定国内闭源模型（倾向智谱 GLM）并确认具体型号串。
 - [ ] 苏宇轩：把 running script 发 Huhe 确认（**10 月 1 日前**）。
 - [ ] 苏宇轩：先在 DeepSeek 上 run 1000 次（generic + government），分早/中/晚时段。
@@ -84,10 +88,6 @@
 
 ## 未决的方法学问题（需 Huhe 拍板）
 
-1. **法域 treatment 的篇幅混淆**：NIST AI RMF 约 2.6 万 token，中国《生成式人工智能服务管理暂行办法》
-   约 2 300 token，相差约 10 倍。“注入文本的长度”本身可能影响回答，
-   要么在论文里明确说明并做篇幅稳健性检验，要么用 `legal_texts.yaml` 的 `processing.max_chars`
-   节选并写明节选规则。
-2. **被支配方案占比 22%–29%**：严格纯随机会产生“甲在三个可排序维度上全面更优”的任务。
+1. **被支配方案占比 22%–29%**：严格纯随机会产生“甲在三个可排序维度上全面更优”的任务。
    默认保留（忠于纯随机），需 Huhe 确认是否接受。
-3. **锦点重复次数**：当前 5 个锚点任务 × 12 次重复 × 每单元，是否足够做时段效应与同任务一致性检验。
+2. **锦点重复次数**：当前 5 个锚点任务 × 12 次重复 × 每单元，是否足够做时段效应与同任务一致性检验。

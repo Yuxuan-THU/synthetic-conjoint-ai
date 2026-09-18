@@ -110,28 +110,25 @@ generic 条件没有法规材料块，其余相同。
 
 ## 4. 提示词与版本控制（prompts.yaml → docs/02_prompt-freeze.md）
 
-- 每次调用记录 `prompt_id`（如 `generic_v1_en`）与 `prompt_sha256`。
+- 每次调用记录 `prompt_id`（如 `generic_v2`）与 `prompt_sha256`。
 - 任何文字改动必须新建 `prompt_id`（v2、v3…），**禁止原地覆盖**；旧版本保留在 yaml 中并标注 `deprecated: true` 与停用日期。
 - 已经跑过数据的 prompt 版本永不复用编号。
 
 ---
 
-## 5. 法规文本规格（legal_texts/manifest.csv）
+## 5. 法规文本（treatment 材料）
 
-| 列 | 说明 |
-|---|---|
-| `law_text_id` | 如 `CN_generative_ai_interim_measures_2023` |
-| `jurisdiction` | CN / US / EU / … |
-| `title_zh` / `title_en` | 标题 |
-| `source_url` | 官方出处 URL |
-| `retrieved_at` | 抓取/整理日期（ISO 8601） |
-| `file` | 相对路径 |
-| `chars` / `est_tokens` | 字符数 / 估算 token（中文按 1 字 ≈ 0.7 token，英文按 4 字符 ≈ 1 token） |
-| `sha256` | 文件哈希，运行前校验 |
-| `review_status` | `pending` / `huhe_confirmed` / `rejected` |
-| `notes` | 节选规则说明（如 EU AI Act 只取哪些章） |
+- 目录只放最终纯文本：`data/raw/legal_texts/{law_text_id}.txt`（随仓库提交；没有 manifest、质检报告与人工校订目录）。
+- 来源 URL / PDF 路径、标题与年份、质检锚点（`must_contain`）、页面剪裁标记等全部登记在 `data/collection/config/legal_texts.yaml`。
+- `02_build_legal_texts.py` 按该配置重建 txt（已存在则跳过，`--force` 才重抓，写入前校验锚点）；文本 sha256 由 `03_run_experiment.py` 在每次调用时现算，写入每一行响应数据的 `law_text_sha256`，用于溯源。
+- 命名规则 `{法域}_{简称}_{年份}.txt`。当前两份：
 
-**运行前置断言**：`03_run_experiment.py` 在启动时必须校验 `review_status == huhe_confirmed`，否则拒绝开跑（防止用未确认或 OCR 乱码文本做 treatment）。
+| law_text_id | 法域 | 体量 |
+|---|---|---|
+| `CN_generative_ai_interim_measures_2023` | CN | 3 668 字符 ≈2 325 token |
+| `US_nist_ai_rmf_2023` | US | 105 623 字符 ≈26 406 token |
+
+两份文本 2026-09-18 经 Huhe 确认（全文口径、不节选）；法域篇幅差异（约 10 倍）在论文中说明。
 
 ---
 

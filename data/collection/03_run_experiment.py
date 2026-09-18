@@ -8,7 +8,7 @@ data/raw/responses/ 下的原始 JSONL，只追加、不重写。
     - 任务由 run_id 派生种子确定，断点续跑不会改变已跑过的任务。
     - 时段之间任务索引区间不重叠，因此 (run_id, task_id) 全局唯一。
     - 法规全文不写进每一行，而是归档到 _prompt_archive.jsonl（见 §6.1）。
-    - 守卫检查：提示词未定稿 / 法规文本未经人工确认时拒绝开跑。
+    - 守卫检查：提示词未定稿时拒绝开跑（法规文本的确认门禁已于 2026-09-18 移除）。
 
 用法：
     # 先看会发出去什么（不调用 API，不需要密钥）
@@ -26,7 +26,6 @@ data/raw/responses/ 下的原始 JSONL，只追加、不重写。
 from __future__ import annotations
 
 import argparse
-import csv
 import random
 import subprocess
 import sys
@@ -152,15 +151,14 @@ def detect_session_label(experiment: Mapping[str, Any], hour: int | None = None)
 def load_law_materials(
     legal_config: Mapping[str, Any],
 ) -> tuple[dict[str, list[tuple[Mapping[str, Any], str]]], dict[str, str], list[str]]:
-    """读取各法域启用中的法规文本；返回 (材料, id->sha256, 问题列表)。"""
-    output_dir = cfg.resolve_path(legal_config["paths"]["output_dir"])
-    manifest_path = output_dir / "manifest.csv"
-    problems: list[str] = []
+    """读取各法域启用中的法规文本；返回 (材料, id->sha256, 问题列表)。
 
-    manifest: dict[str, dict[str, str]] = {}
-    if manifest_path.exists():
-        with manifest_path.open("r", encoding="utf-8", newline="") as handle:
-            manifest = {row["law_text_id"]: row for row in csv.DictReader(handle)}
+    文本文件直接放在 data/raw/legal_texts/{law_text_id}.txt；目录里没有
+    manifest / 质检报告，来源等文档信息登记在 config/legal_texts.yaml，
+    sha256 在每次调用时对 txt 现算并写入响应行。
+    """
+    output_dir = cfg.resolve_path(legal_config["paths"]["output_dir"])
+    problems: list[str] = []
 
     materials: dict[str, list[tuple[Mapping[str, Any], str]]] = {}
     sha_by_id: dict[str, str] = {}
@@ -175,26 +173,26 @@ def load_law_materials(
             problems.append(f"法规文本缺失：{text_path}（先运行 02_build_legal_texts.py）")
             continue
         text = text_path.read_text(encoding="utf-8")
-        row = manifest.get(law_id, {})
         meta = {
             "law_text_id": law_id,
             "jurisdiction": jurisdiction,
             "title_en": law.get("title_en", ""),
-            "review_status": row.get("review_status", "pending"),
-            "quality_status": row.get("quality_status", "unknown"),
             "file": str(text_path.relative_to(cfg.PROJECT_ROOT)),
         }
         materials.setdefault(jurisdiction, []).append((meta, text))
-        sha_by_id[law_id] = row.get("sha256") or sha256_text(text)
+        sha_by_id[law_id] = sha256_text(text)
     return materials, sha_by_id, problems
 
 
 def guard_failures(
     experiment: Mapping[str, Any],
     prompts_config: Mapping[str, Any],
-    law_materials: Mapping[str, list[tuple[Mapping[str, Any], str]]],
-    condition: str,
 ) -> list[str]:
+    """开跑前的守卫检查：提示词必须已定稿（frozen）。
+
+    法规文本的确认门禁（review_status == huhe_confirmed）已于 2026-09-18 移除：
+    两份在用文本当时已由 Huhe 确认，门禁完成使命（见 docs/01_design-spec.md §5）。
+    """
     guards = experiment.get("guards", {})
     failures: list[str] = []
 
@@ -204,16 +202,6 @@ def guard_failures(
                 failures.append(
                     f"提示词 {prompt_id} 状态为 {prompt.get('status')}，尚未定稿（frozen）"
                 )
-
-    if condition == "government" and guards.get("require_confirmed_legal_texts", True):
-        unconfirmed = [
-            meta["law_text_id"]
-            for laws in law_materials.values()
-            for meta, _ in laws
-            if meta.get("review_status") != "huhe_confirmed"
-        ]
-        for law_id in unconfirmed:
-            failures.append(f"法规文本 {law_id} 尚未人工确认（review_status != huhe_confirmed）")
     return failures
 
 
@@ -570,7 +558,7 @@ def main() -> int:
         for problem in law_problems:
             print(f"[warn] {problem}")
 
-    failures = guard_failures(experiment, prompts_config, law_materials, conditions[0] if len(conditions) == 1 else "government")
+    failures = guard_failures(experiment, prompts_config)
     guards_skipped = bool(args.skip_guards) or args.dry_run
     if failures and not args.skip_guards and not args.dry_run:
         print("守卫检查未通过：")

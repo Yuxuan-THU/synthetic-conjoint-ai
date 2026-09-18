@@ -97,6 +97,8 @@
 
 ## 4. 提示词方案
 
+> 提示词已按讨论定稿并冻结（v2，2026-09-18）；最终正文以 `docs/02_prompt-freeze.md` 为准，本节为早期提案存档。
+
 ### 4.1 现有两版 prompt（Huhe 草稿，纪要 01:32–03:32）
 
 - **generic**：按自身 general knowledge 与 reasoning 选择，不代入任何政府/政党/机构立场；不让措辞影响判断；≤50 词英文解释。
@@ -221,11 +223,11 @@ synthetic-conjoint-ai/
 │   │   │   ├── design.py         # 随机化引擎（含"甲乙必须不同"约束）
 │   │   │   └── io_utils.py       # JSONL 追加写、断点续跑、去重
 │   │   ├── 01_build_design_matrix.py   # 生成并冻结随机任务矩阵 → data/raw/design/
-│   │   ├── 02_extract_legal_texts.py   # PDF→TXT + sha256 + 字符统计 → data/raw/legal_texts/
+│   │   ├── 02_build_legal_texts.py     # 抓取/抽取法规文本 → data/raw/legal_texts/{law_text_id}.txt
 │   │   └── 03_run_experiment.py        # 主运行器（含 --dry-run / 时段配额 / 断点续跑）
 │   └── raw/                      # 只读原始输入（.gitignore 默认忽略）
 │       ├── instrument/           # 原始 docx、抽取文本、批注
-│       ├── legal_texts/          # 法规纯文本 + manifest.csv（含 sha256、字符数）
+│       ├── legal_texts/          # CN/US 两份法规纯文本（{法域}_{简称}_{年份}.txt）
 │       ├── design/               # 冻结的任务矩阵（design_matrix.csv + anchors.csv）
 │       └── responses/            # 原始响应（JSONL，一行一次调用）
 ├── source/
@@ -476,7 +478,7 @@ synthetic-conjoint-ai/
 - [x] Q1–Q21 定下口径 → 写入 config
 - [x] 采集、清洗、分析代码全部写完并通过自检（见 §15）
 - [x] 提示词定稿并冻结（`prompts.yaml` → `status: frozen`，2026-09-18）
-- [ ] 法规文本人工确认（`huhe_confirmed`）
+- [x] 法规文本人工确认（`huhe_confirmed`，2026-09-18，Huhe）
 - [ ] 把 running script 发 Huhe 确认（纪要明确要求，9/30 前）
 - [ ] 真实调用 DeepSeek 跑主实验
 
@@ -490,7 +492,7 @@ synthetic-conjoint-ai/
 | 阶段  | 脚本                                                                  | 作用                                                                     |
 | --- | ------------------------------------------------------------------- | ---------------------------------------------------------------------- |
 | 采集  | `data/collection/01_build_design_matrix.py`                         | 生成并**冻结**随机任务矩阵（主 4000 + 锦点 360），含随机化诊断与不变量校验                          |
-| 采集  | `data/collection/02_build_legal_texts.py`                           | 抓取/抽取 treatment 法规文本，生成 manifest（来源 URL + sha256 + 审核状态）与质检报告          |
+| 采集  | `data/collection/02_build_legal_texts.py`                           | 按 config 抓取/抽取 treatment 法规文本（页面剪裁 + 页眉页脚清理 + 锚点校验），写入 `data/raw/legal_texts/{law_text_id}.txt`，已存在则跳过          |
 | 采集  | `data/collection/03_run_experiment.py`                              | 主运行器：渲染 → 调用 DeepSeek → 落盘 JSONL；支持断点续跑、时段配额、守卫检查、`--dry-run`、`--mock` |
 | 采集库 | `data/collection/_llm/{config,io_utils,design,render,providers}.py` | 随机化引擎、渲染器、厂商适配器、IO 工具                                                  |
 | 自检  | `data/collection/_llm/tests/run_tests.py`                           | 19 个单元测试，锁定设计不变量与渲染规则                                                  |
@@ -517,11 +519,8 @@ python source/cleaning/_parse_lib.py
 # 2) 生成冻结的任务矩阵
 python data/collection/01_build_design_matrix.py --run-id 2026-10-05_deepseek_main
 
-# 3) 准备法规文本，核对后人工确认
+# 3) 法规文本（两份 txt 已随仓库提交，无需重建；仅更换文本时才运行；已有则跳过）
 python data/collection/02_build_legal_texts.py
-python data/collection/02_build_legal_texts.py \
-    --set-review-status CN_generative_ai_interim_measures_2023=huhe_confirmed \
-    --set-review-status US_nist_ai_rmf_1_0_2023=huhe_confirmed
 
 # 4) 先看会发出去什么（不调用 API，不需要密钥）
 python data/collection/03_run_experiment.py --run-id 2026-10-05_deepseek_main --dry-run
@@ -557,11 +556,8 @@ prefix 在单元内保持不变，`prompt_archive_id` 在条件/情景间不撞�
   6. `chose_a` 缺失导致稳健性脚本报错；
   7. matplotlib 默认字体不含汉字，图里全是方块。
 
-### 15.4 还需要 Huhe 拍板的两件事（不能由代码决定）
+### 15.4 还需要 Huhe 拍板的一件事（不能由代码决定）
 
-1. **法规文本确认**：特别是美国那份的篇幅问题——NIST AI RMF 约 2.6 万 token，
- 是中国暂行办法（约 2 300 token）的 10 倍。法域之间的“treatment 篇幅”本身就是一个混淆因素，
- 要么在论文里明确说明，要么用 `processing.max_chars` 节选并写明节选规则。
-2. **被支配方案占比 22%–29%**：严格按“纯随机”会自然产生“甲在三个可排序维度上全面更优”的任务。
+1. **被支配方案占比 22%–29%**：严格按“纯随机”会自然产生“甲在三个可排序维度上全面更优”的任务。
  默认保留（忠于纯随机），但请 Huhe 确认是否接受。
 

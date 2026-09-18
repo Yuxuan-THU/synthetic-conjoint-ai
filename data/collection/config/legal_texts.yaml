@@ -1,23 +1,21 @@
 # =============================================================================
-# 法规文本登记表（treatment 材料）
+# 法规文本登记（treatment 材料）
 # =============================================================================
-# 用途：为 government 条件提供"必须严格遵守"的官方文本。
+# data/raw/legal_texts/ 里只保留最终纯文本 {law_text_id}.txt（随仓库提交）；
+# 来源、标题、年份等文档信息登记在本文件，不再生成 manifest / 质检报告，
+# 也没有人工校订通道。
 #
 # 取文方式（retrieval.mode）：
-#   fetch  : 从官方页面抓取 HTML 并转纯文本（推荐；来源可追溯）
-#   pdf    : 从本地 PDF 抽取文本层
-#   manual : 使用 data/raw/legal_texts/manual/{id}.txt（人工校订稿，优先级最高）
+#   fetch : 从官方页面抓取 HTML 并转纯文本（中国法规）
+#   pdf   : 从本地 PDF 抽取文本层（美国 NIST AI RMF）
 #
-# 重要背景（2026-09-18 核查结果）：
-#   - 目录内 china/ 的三份 PDF（深度合成规定、算法推荐规定、暂行办法）均为
-#     无文本层扫描件；唯一的 OCR 版本（生成式人工智能服务管理暂行办法(OCR).pdf
-#     与 legal_text_China.md）错字极多，例如"生成式人工智能玻务管理暂行办法"
-#     "第一量总""需二素""国家直机测信都办公军"。用这种文本做 treatment，
-#     government 条件会整体失效。因此中国法规改为从官方页面抓取。
-#   - 加拿大 C-27、韩国 AI 基本法同样是无文本层扫描件（本轮不使用）。
+# 背景：随项目提供的 china/ 三份 PDF 均为无文本层扫描件，唯一的 OCR 版本
+# 错字极多（"生成式人工智能玻务管理暂行办法"），不可用于 treatment；因此
+# 中国法规改为从网信办官方页面抓取。
 #
-# 任何文本要真正用于采集，必须把 review_status 改成 huhe_confirmed
-# （由 Huhe 或苏宇轩人工核对后手动改），否则采集脚本会拒绝开跑。
+# 02_build_legal_texts.py 按本文件重建 txt：已存在则跳过，--force 才重抓，
+# 并在写入前校验 quality.must_contain 锚点。文本改动会改变采集数据中的
+# law_text_sha256（运行器在每次调用时对 txt 现算并写入响应行）。
 # =============================================================================
 
 paths:
@@ -25,17 +23,12 @@ paths:
   source_root: "../ai legal text"
   # 输出目录（相对项目根目录）
   output_dir: "data/raw/legal_texts"
-  # 人工校订稿目录：同名 {id}.txt 存在时优先使用
-  manual_dir: "data/raw/legal_texts/manual"
 
-# 文本处理规则
 processing:
-  # HTML 转纯文本时保留段落换行
-  keep_paragraph_breaks: true
   # 是否压缩连续空行（不影响正文内容）
   collapse_blank_lines: true
   # 单次 prompt 的字符上限；null 表示不截断。
-  # 注意：截断会改变 treatment 强度，必须记录并说明节选规则。
+  # 截断会改变 treatment 强度，必须记录并说明节选规则。
   max_chars: null
 
 laws:
@@ -56,58 +49,20 @@ laws:
         - "https://www.gov.cn/zhengce/zhengceku/202307/content_6891752.htm"
       expected_language: zh
     quality:
-      # 用于自动质检的锚点字符串；缺失即判定抽取失败
+      # 质检锚点；缺失即拒绝写入（防止把错误页面或乱码写进 treatment）
       must_contain: ["生成式人工智能服务管理暂行办法", "第一条", "第二十四条"]
-      expected_articles: 24
-    # 官方页面抓取后会带大量导航/页脚，用显式标记剪除（剪掉多少字符会记入 manifest）
+    # 官方页面抓取后会带大量导航/页脚，用显式标记剪除
     extract:
       start_marker: "国家互联网信息办公室"
       start_occurrence: 1
       end_marker: "第二十四条 本办法自2023年8月15日起施行。"
       end_occurrence: 1
-    review_status: pending
     notes: >
-      本轮 CN 的主 treatment 文本。目录内 PDF 为扫描件、OCR 版本错字过多，
-      故改从网信办官方页面抓取。
-
-  - id: CN_deep_synthesis_provisions_2022
-    enabled: false
-    jurisdiction: CN
-    title_en: "Provisions on the Administration of Deep Synthesis of Internet Information Services"
-    title_zh: "互联网信息服务深度合成管理规定"
-    issued: "2022-12-11"
-    effective: "2023-01-10"
-    retrieval:
-      mode: fetch
-      url: "https://www.cac.gov.cn/2022-12/11/c_1672221949354811.htm"
-      expected_language: zh
-    quality:
-      must_contain: ["互联网信息服务深度合成管理规定", "第一条"]
-      expected_articles: 25
-    review_status: pending
-    notes: >
-      默认停用。若 Huhe 认为 CN treatment 需要覆盖"深度合成"，改为 enabled: true 即可。
-
-  - id: CN_algorithm_recommendation_provisions_2022
-    enabled: false
-    jurisdiction: CN
-    title_en: "Provisions on the Administration of Algorithmic Recommendations in Internet Information Services"
-    title_zh: "互联网信息服务算法推荐管理规定"
-    issued: "2022-01-04"
-    effective: "2022-03-01"
-    retrieval:
-      mode: fetch
-      url: "https://www.cac.gov.cn/2022-01/04/c_1642894606364259.htm"
-      expected_language: zh
-    quality:
-      must_contain: ["互联网信息服务算法推荐管理规定", "第一条"]
-      expected_articles: 35
-    review_status: pending
-    notes: >
-      默认停用。算法推荐与"公共决策场景"关联较弱，故默认不纳入。
+      本轮 CN 的 treatment 文本（3668 字符 ≈2325 token）。目录内 PDF 为扫描件、
+      OCR 版本错字过多，故从网信办官方页面抓取；2026-09-18 经 Huhe 确认。
 
   # --- 美国 ------------------------------------------------------------------
-  - id: US_nist_ai_rmf_1_0_2023
+  - id: US_nist_ai_rmf_2023
     enabled: true
     jurisdiction: US
     title_en: "Artificial Intelligence Risk Management Framework (AI RMF 1.0)"
@@ -120,39 +75,12 @@ laws:
       expected_language: en
     quality:
       must_contain: ["AI RMF", "GOVERN", "MANAGE"]
-      expected_articles: null
     # 删除逐页重复的页眉/页脚，只去排版残留，不动正文
     strip_line_patterns:
       - "^NIST AI 100-1$"
       - "^This publication is available free of charge from:.*$"
       - "^https://doi\\.org/10\\.6028/NIST\\.AI\\.100-1$"
-    review_status: pending
     notes: >
-      本轮 US 的主 treatment 文本。注意两点：
-      (1) 这是自愿性框架（voluntary framework），不是法律；表述上须与 CN 的部门规章区分。
-      (2) 体量约 10.6 万字符（≈2.7 万 token），与 CN 暂行办法（约 3.5 千字符）
-          差约 10 倍。法域之间的 treatment"篇幅"本身就是一个混淆因素，
-          须在论文中说明；必要时用 processing.max_chars 做节选并写明节选规则。
-
-  - id: US_eo_14110_2023
-    enabled: false
-    jurisdiction: US
-    title_en: "Executive Order 14110 on Safe, Secure, and Trustworthy Development and Use of AI"
-    title_zh: "第 14110 号行政令"
-    issued: "2023-10-30"
-    retrieval:
-      mode: fetch
-      url: "https://www.federalregister.gov/documents/2023/11/01/2023-24283/safe-secure-and-trustworthy-development-and-use-of-artificial-intelligence"
-      expected_language: en
-    quality:
-      must_contain: ["Executive Order", "artificial intelligence"]
-      expected_articles: null
-    extract:
-      start_marker: "By the authority vested in me as President by the Constitution"
-      start_occurrence: 1
-      end_marker: "Sec. 11. General Provisions."
-      end_occurrence: 1
-    review_status: pending
-    notes: >
-      默认停用。备选的 US 法律性文本（行政令），篇幅约 3 万字符，比 NIST 框架短，
-      若 Huhe 认为"NIST 是自愿框架，法律效力不足"可改用此件或两者并用。
+      本轮 US 的 treatment 文本（105623 字符 ≈26406 token）。注意：这是自愿性
+      框架（voluntary framework），不是法律。体量约为 CN 文本的 10 倍，法域
+      篇幅差异须在论文中说明；2026-09-18 经 Huhe 确认（全文口径、不节选）。
