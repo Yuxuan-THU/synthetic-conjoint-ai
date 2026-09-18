@@ -45,11 +45,9 @@ source/analysis/01–04  ──►  outputs/{tables,figures}/      ← 论文用
 
 | 文件 | 作用 |
 |---|---|
-| `00_work-plan.md` | 总工作方案：因子结构、样本量、prompt 方案、法规文本问题、成本、里程碑、Q1–Q21 决策清单、§15 运行手册 |
+| `00_work-plan.md` | 唯一规划文档：研究问题与假设、设计与样本量、变量与数据规格、执行方案、分析计划、里程碑、风险与未决事项、决策日志、运行手册 |
 | `01_design-spec.md` | 设计规格：随机化算法与不变量、三个指纹的空间定义、渲染顺序、落盘与归档规格——`design.py`/`render.py` 的实现依据 |
 | `02_prompt-freeze.md` | 两版提示词的完整冻结正文：system prompt 全文与 sha256、每次调用的消息结构、输出约定 |
-| `03_meeting-notes-2026-09-17.md` | 2026-09-17 技术对齐会纪要（含逐字稿） |
-| `project-notes.md` | 研究问题、假设、变量操作化、分析计划、决策日志、待办 |
 
 ### `data/collection/`：采集（等价于"实施问卷"）
 
@@ -177,7 +175,7 @@ python replication/run_all.py
 逐文件职责见上文「文件地图」；本仓库遵循 [research-project-template](https://github.com/Yuxuan-THU/research-project-template) 的生命周期结构：
 
 ```text
-docs/                研究计划、设计规格、提示词冻结、会议记录
+docs/                工作规划、设计规格、提示词冻结
 data/collection/     LLM 调用代码（等价于"实施问卷"）+ 配置文件
 data/raw/            原始输入与原始响应（法规文本、冻结任务矩阵、JSONL 响应）
 source/cleaning/     响应解析与分析数据构造
@@ -208,8 +206,6 @@ python replication/run_all.py --include-collection   # 含采集阶段（03_run_
 
 | 文件 | 内容 |
 |---|---|
-| `docs/00_work-plan.md` | 完整工作方案 + 待确认问题 Q1–Q21 |
+| `docs/00_work-plan.md` | 唯一规划文档（研究问题、设计、执行、分析、决策日志与运行手册） |
 | `docs/01_design-spec.md` | 随机化算法、渲染规则、字段规格（代码实现依据） |
 | `docs/02_prompt-freeze.md` | 两版提示词的完整冻结正文（可直接复制） |
-| `docs/03_meeting-notes-2026-09-17.md` | 2026-09-17 技术对齐会纪要（含逐字稿） |
-| `docs/project-notes.md` | 研究问题、操作化、分析计划、决策日志 |
