@@ -36,7 +36,9 @@
   - 支持 `--dry-run`（渲染样张，不调 API、不需密钥）与 `--mock`（伪回答，跑通链路）。
   - 锚点任务排在主任务之前，避免被 `--limit` 截掉。
 - 新增 `data/collection/_llm/` 内部库：随机化引擎、渲染器、厂商适配器（DeepSeek/智谱/火山/OpenAI/Anthropic 统一接口）、IO 与重试。
-- 新增 `data/collection/_llm/tests/run_tests.py`：19 个单元测试全部通过。
+- 新增 `data/collection/_llm/tests/run_tests.py`：20 个单元测试全部通过。
+- 修复 `_prompt_archive.jsonl` 去重失效：`existing_keys` 返回元组集合而调用处按字符串判断，导致每次启动重复写入前缀（pilot 实测 6 个前缀被写成 12 行）；新增 `existing_values` 单字段取值集合并加单元测试，已有重复行已清理。
+- 完成最小化真实调用验证（2026-09-18，批号 `2026-09-18_deepseek_pilot`）：54 次调用（12 锚点 + 42 主任务，6 单元）全部成功，0 失败/拒答/截断，成本 $0.025；实测服务端返回 `model=deepseek-flash`；解析全部成功但置信度偏低（low 13 / medium 40 / high 1），低置信度样本人工核对均正确；结论与主跑成本外推（≈$1.7）见 `docs/00-work-plan.md` §6.7。pilot 产物归档在 `outputs/other/pilot_2026-09-18/`，不进入正式分析。
 - 移除法规文本门禁（2026-09-18）：删除 `03_run_experiment.py` 的 `review_status` 校验、`experiment.yaml` 的 `require_confirmed_legal_texts` 配置与 `02` 脚本的 `--set-review-status`；提示词 `frozen` 守卫保留。02 脚本简化为仅构建 txt；03 改为运行时对 txt 现算 sha256 并写入响应行的 `law_text_sha256`。
 
 ### 清洗

@@ -47,7 +47,7 @@ attr_order = rng.sample(scenario.attribute_ids, 5)   # 属性行序随机（批�
 | `task_signature_pair` | 同一对方案（含左右位，不含行序） | 6⁵ = 7 776 |
 | `task_signature_unordered` | 同一对档案（无左右位/行序） | 3⁵ = 243 |
 
-**必须满足的不变量**（已写进单元测试 `_llm/tests/run_tests.py`，19 个测试全部通过）：
+**必须满足的不变量**（已写进单元测试 `_llm/tests/run_tests.py`，20 个测试全部通过）：
 
 1. 对每个属性，`a_k != b_k`（批注：两种方案的随机值必须不同）；
 2. 5 个属性全部出现且各出现一次，行序是完整随机排列；

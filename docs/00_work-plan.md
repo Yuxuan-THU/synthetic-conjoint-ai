@@ -249,7 +249,7 @@ replication/{run_all.py,run_all.R,MANIFEST.csv}
 | 采集 | `data/collection/01_build_design_matrix.py` | 生成并冻结随机任务矩阵（主 4000 + 锚点 360），含不变量校验与随机化诊断 |
 | 采集 | `data/collection/02_build_legal_texts.py` | 构建 treatment 法规文本（页面剪裁 + 页眉页脚清理 + 锚点校验） |
 | 采集 | `data/collection/03_run_experiment.py` | 主运行器：渲染 → 调用 → 落盘 JSONL；断点续跑、时段配额、守卫 |
-| 自检 | `data/collection/_llm/tests/run_tests.py` | 19 个单元测试，锁定设计不变量与渲染规则 |
+| 自检 | `data/collection/_llm/tests/run_tests.py` | 20 个单元测试，锁定设计不变量、渲染规则与去重工具 |
 | 清洗 | `source/cleaning/01_parse_responses.py` | 自由文本 → 二选一 `choice_panel`；输出 200 条人工核对样本 |
 | 清洗 | `source/cleaning/02_build_analysis_data.py` | 长表与重复任务分组 |
 | 清洗 | `source/cleaning/_parse_lib.py` | 答案解析器（10 条自测用例） |
@@ -297,6 +297,19 @@ python replication/run_all.py
 - 运行器：`--dry-run` 样张人工核对；generic / government / CN / US 渲染正确；前缀在单元内稳定、归档 id 在条件与情景间不撞号。
 - 全链路 `--mock`：216 次伪调用 × 6 单元 × 3 时段 → 清洗 → 四个分析脚本全部退出码 0。
 - 自检中修掉的问题（均已写入代码注释或测试）：归档 id 漏掉 system prompt；HTML 解析器把空元素当容器；解析器误识别 "option because"；锚点一致性按重复序号分组导致拆题；`chose_a` 缺失；matplotlib 中文字体缺失。
+
+### 6.7 最小化验证（pilot）结论
+
+2026-09-18 用独立批号 `2026-09-18_deepseek_pilot` 做了一次最小化真实调用，共 **54 次**（12 次锚点 + 42 次主任务，6 个单元 × 7 题，evening 时段）：
+
+- **链路打通**：54/54 成功，0 失败、0 拒答、0 截断，无错误文件；断点续跑正确跳过已完成任务；延迟 p50 1.5 s；prompt 缓存命中约 89%；总成本 $0.025。
+- **修复 1 个真实 bug**：`_prompt_archive.jsonl` 去重失效——`existing_keys` 返回元组集合而调用处按字符串判断，导致每次启动重复写入前缀（实测 6 个前缀写成 12 行）；新增 `existing_values`（单字段取值集合）替换调用，清理重复行并补单元测试（20 个测试全部通过）。
+- **实际模型名**：请求 `deepseek-chat`，服务端返回 `model=deepseek-flash`（`system_fingerprint` 恒定 `aeb56401…`）；论文表述与成本核算以响应行记录的 `model_returned` / `system_fingerprint` 为准。
+- **解析质量**：54 条全部解析出选项（A 21 / B 33），但置信度偏低（low 13 / medium 40 / high 1）：模型以 `Option A. 解释…` 开头而不含选择动词。已逐条核对 13 条低置信度回答，**全部取到正确选项**；若要提高置信度，可在解析器增加“回答开头即标签”规则（不改提示词）。
+- **偏差**：1 条未给解释（仅 "Option B"）；3 条解释超过 50 词（最长 64 词，均值 39.5）；无拒答、无截断。
+- **treatment 起效迹象**：government 条件的回答会援引具体条款（如 "Article 4(5)"、"GOVERN 2.3"、"MEASURE 2.6"）。
+- **主跑成本外推**：按 pilot 单次成本外推 4 360 次 ≈ **$1.7**（generic $0.26 + government $1.26 + 锚点 $0.17）。
+- **数据管理**：pilot 产物（任务矩阵、响应、日志、样张）归档到 `outputs/other/pilot_2026-09-18/`，不进入正式分析；`data/raw/responses/` 只保留共享的提示词归档。
 
 ---
 
@@ -358,7 +371,7 @@ python replication/run_all.py
 ## 10. 待办事项
 
 - [x] 方案与决策口径确认；提示词 v2 定稿；法规文本确认。
-- [x] 代码完成（采集 / 清洗 / 分析 + 19 个单元测试 + 解析器自测 + 全链路 mock 验证）。
+- [x] 代码完成（采集 / 清洗 / 分析 + 20 个单元测试 + 解析器自测 + 全链路 mock 验证）。
 - [ ] 确定国内闭源模型（倾向智谱 GLM）与具体型号串。
 - [ ] 把 running script 发 Huhe 确认（10 月 1 日前）。
 - [ ] DeepSeek 主跑 4 360 次（三个时段）。

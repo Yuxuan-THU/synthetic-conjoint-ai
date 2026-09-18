@@ -109,6 +109,19 @@ def existing_keys(
     return keys
 
 
+def existing_values(path: str | os.PathLike[str], field: str) -> set[Any]:
+    """读取 JSONL 中某个字段的取值集合（单字段去重场景用）。
+
+    注意与 existing_keys 的区别：后者返回元组集合，单字段时成员判断必须写成
+    (value,) in keys。历史上混淆这两者导致 _prompt_archive 去重失效、每次启动
+    重复写入前缀。
+    """
+    values: set[Any] = set()
+    for record in iter_jsonl(path):
+        values.add(record.get(field))
+    return values
+
+
 def write_json(path: str | os.PathLike[str], payload: Any) -> None:
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)

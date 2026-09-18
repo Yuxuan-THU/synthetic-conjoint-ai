@@ -55,6 +55,9 @@ models:
       中国开源权重模型。官方 API 未提供 seed 参数，因此单次回答无法逐次复现；
       这一点是设计事实，靠大样本 + 锚点重复来刻画回答的随机性。
       温度取 1.0（官方默认），以保留模型自身的回答变异。
+      2026-09-18 实测（pilot 48 次）：请求 model=deepseek-chat 时服务端返回
+      model=deepseek-flash，system_fingerprint 恒定（aeb56401…）。响应行会记录
+      model_returned / system_fingerprint，写论文与核算成本时以实际返回值为准。
 
   # --- 不启用：思维链模型 ----------------------------------------------------
   deepseek-reasoner:

@@ -24,6 +24,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from _llm import config as cfg  # noqa: E402
 from _llm import design as design_lib  # noqa: E402
+from _llm import io_utils  # noqa: E402
 from _llm import render as render_lib  # noqa: E402
 
 SCENARIO_IDS = ["border_defense", "disease_diagnosis"]
@@ -278,6 +279,37 @@ class TestRendering(unittest.TestCase):
                 answer_protocol="free_text",
                 language="zh",
             )
+
+
+class TestIoUtils(unittest.TestCase):
+    def test_dedupe_helpers_use_consistent_shapes(self) -> None:
+        """existing_values 返回字符串集合，existing_keys 返回元组集合。
+
+        历史 bug（2026-09-18 pilot 发现）：调用处把 existing_keys（元组集合）
+        当字符串集合用，导致 _prompt_archive.jsonl 每次启动重复写入前缀。
+        """
+        import json
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmp:
+            archives = Path(tmp) / "archive.jsonl"
+            archives.write_text(
+                json.dumps({"prompt_archive_id": "aaa"}) + "\n"
+                + json.dumps({"prompt_archive_id": "bbb"}) + "\n",
+                encoding="utf-8",
+            )
+            values = io_utils.existing_values(archives, "prompt_archive_id")
+            self.assertEqual(values, {"aaa", "bbb"})
+            self.assertIn("aaa", values)
+            self.assertNotIn("ccc", values)
+
+            responses = Path(tmp) / "responses.jsonl"
+            responses.write_text(
+                json.dumps({"run_id": "r", "task_id": "t1"}) + "\n",
+                encoding="utf-8",
+            )
+            keys = io_utils.existing_keys(responses, ["run_id", "task_id"])
+            self.assertIn(("r", "t1"), keys)
 
 
 if __name__ == "__main__":

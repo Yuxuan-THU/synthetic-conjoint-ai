@@ -44,6 +44,7 @@ from _llm.io_utils import (  # noqa: E402
     append_jsonl,
     beijing_hour,
     existing_keys,
+    existing_values,
     iso_beijing,
     iso_utc,
     iter_jsonl,
@@ -632,7 +633,7 @@ def main() -> int:
         return 0
 
     # --- 归档 prefix（法规全文只存一次）-------------------------------------
-    archived = existing_keys(context.archive_file, ["prompt_archive_id"])
+    archived = existing_values(context.archive_file, "prompt_archive_id")
     results = {
         "run_id": args.run_id,
         "session_label": session_label,

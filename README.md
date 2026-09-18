@@ -8,7 +8,7 @@
 - **模型**：首批 DeepSeek（中国开源）；后续 智谱 GLM / 豆包（中国闭源）、OpenAI / Anthropic（美国闭源）。
 - **样本**：每个（条件 × 情景）约 1 000 次选择，分早/中/晚三个时段执行。
 - **负责人**：苏宇轩（代码、prompt、国内模型）；Huhe 老师（国外闭源模型、prompt draft、conjoint 分析 code、论文起草）；孟老师（研究统筹）。
-- **当前阶段**：代码已全部写完并通过自检（19 个单元测试 + 全链路 `--mock` 验证）；
+- **当前阶段**：代码已全部写完并通过自检（20 个单元测试 + 全链路 `--mock` 验证）；
   提示词已冻结、treatment 法规文本已由 Huhe 确认，可开始真实调用。下一步与待确认事项见 `docs/00_work-plan.md` §15。
 
 ## 文件地图（每个文件是做什么的）
@@ -68,7 +68,7 @@ source/analysis/01–04  ──►  outputs/{tables,figures}/      ← 论文用
 | `_llm/render.py` | system prompt 与任务屏渲染、prefix 归档 id（哈希同时覆盖 system prompt） |
 | `_llm/providers.py` | DeepSeek/智谱/火山/OpenAI/Anthropic 统一调用接口，重试与错误分类 |
 | `_llm/io_utils.py` | 哈希、北京时间、JSONL 追加写、断点续跑去重、稳定种子 |
-| `_llm/tests/run_tests.py` | 19 个单元测试，锁定"必须满足的不变量"；直接 `python` 运行，无需 pytest |
+| `_llm/tests/run_tests.py` | 20 个单元测试，锁定"必须满足的不变量"；直接 `python` 运行，无需 pytest |
 | `_llm/__init__.py` | 包声明，导出可被 import 的子模块 |
 
 ### `data/raw/`：原始输入与原始响应（只读）
