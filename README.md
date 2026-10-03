@@ -7,7 +7,6 @@
 - **实验条件**：`generic`（无外力，基于自身知识推理）vs `government`（严格遵循所附法规文本）。
 - **模型**：首批 DeepSeek（中国开源）；后续 智谱 GLM / 豆包（中国闭源）、OpenAI / Anthropic（美国闭源）。
 - **样本**：每个（条件 × 情景）约 1 000 次选择，分早/中/晚三个时段执行。
-- **负责人**：苏宇轩（代码、prompt、国内模型）；Huhe 老师（国外闭源模型、prompt draft、conjoint 分析 code、论文起草）；孟老师（研究统筹）。
 - **当前阶段**：代码已全部写完并通过自检（20 个单元测试 + 全链路 `--mock` 验证）；
   提示词已冻结、treatment 法规文本已由 Huhe 确认，可开始真实调用。下一步与待确认事项见 `docs/00_work-plan.md` §15。
 
@@ -172,8 +171,6 @@ python replication/run_all.py
 
 ## 目录说明
 
-逐文件职责见上文「文件地图」；本仓库遵循 [research-project-template](https://github.com/Yuxuan-THU/research-project-template) 的生命周期结构：
-
 ```text
 docs/                工作规划、设计规格、提示词冻结
 data/collection/     LLM 调用代码（等价于"实施问卷"）+ 配置文件
@@ -194,18 +191,3 @@ cp .env.example .env          # 填入 DEEPSEEK_API_KEY
 python replication/run_all.py                        # 清洗 + 分析
 python replication/run_all.py --include-collection   # 含采集阶段（03_run_experiment.py 被排除，不会调 API）
 ```
-
-## 数据与隐私
-
-- 本项目数据为模型生成的合成数据，不含个人可识别信息。
-- `.env`、`data/raw/responses/`、`outputs/{data,models,other}/` 默认不进入 Git；
-  `data/raw/{instrument,legal_texts,design}/`（研究工具、treatment 材料、冻结任务矩阵）为例外，已提交。
-- 投稿阶段建议将 `responses/*.jsonl` 与冻结任务矩阵打包发布到 OSF/Zenodo，并在 `replication/MANIFEST.csv` 中登记。
-
-## 关键文档
-
-| 文件 | 内容 |
-|---|---|
-| `docs/00_work-plan.md` | 唯一规划文档（研究问题、设计、执行、分析、决策日志与运行手册） |
-| `docs/01_design-spec.md` | 随机化算法、渲染规则、字段规格（代码实现依据） |
-| `docs/02_prompt-freeze.md` | 两版提示词的完整冻结正文（可直接复制） |
